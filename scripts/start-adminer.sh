@@ -11,6 +11,6 @@ if [ ! -f "$ADMINER_DIR/adminer.php" ]; then
   exit 1
 fi
 
-echo "Démarrage d'Adminer sur le port $ADMINER_PORT..."
+echo "Démarrage d'IBar Admin sur le port $ADMINER_PORT..."
 cd "$ADMINER_DIR"
-php -S 0.0.0.0:$ADMINER_PORT adminer.php
+php -S 0.0.0.0:$ADMINER_PORT ibar-adminer.php

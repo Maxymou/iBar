@@ -1,0 +1,309 @@
+/* ── IBar Adminer — Custom Theme ─────────────────────────────────────────── */
+
+:root {
+  --blue-50:  #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-200: #bfdbfe;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --gray-50:  #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-700: #374151;
+  --gray-900: #111827;
+  --radius:   10px;
+  --shadow:   0 4px 24px rgba(0,0,0,.10);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
+               Roboto, sans-serif;
+  font-size: 14px;
+  color: var(--gray-700);
+  background: var(--gray-50);
+  margin: 0;
+}
+
+a {
+  color: var(--blue-700);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+#menu {
+  background: var(--blue-700);
+  border-bottom: none;
+  padding: 0 16px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+}
+
+#menu h1 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+#menu a { color: rgba(255,255,255,.85); }
+#menu a:hover { color: #fff; text-decoration: none; }
+
+/* Breadcrumb separator */
+#menu .breadcrumb { color: rgba(255,255,255,.5); }
+
+/* ── Login page ────────────────────────────────────────────────────────────── */
+#content {
+  max-width: 480px;
+  margin: 48px auto;
+  padding: 0 16px;
+}
+
+/* Login card */
+form[action=""] table,
+form[method="post"] > table {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  border: 1px solid var(--gray-200);
+  width: 100%;
+}
+
+/* ── Connection info box ────────────────────────────────────────────────────── */
+.ibar-login-info {
+  background: var(--blue-50);
+  border: 1px solid var(--blue-200);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.ibar-login-info-title {
+  font-weight: 600;
+  color: var(--blue-800);
+  margin-bottom: 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.ibar-conn-table {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: auto !important;
+  background: transparent !important;
+}
+
+.ibar-conn-table td { padding: 2px 12px 2px 0; font-size: 13px; }
+
+.ibar-conn-label { color: var(--gray-500); white-space: nowrap; }
+
+.ibar-conn-value {
+  font-family: "SF Mono", "Fira Code", "Courier New", monospace;
+  color: var(--gray-900);
+  font-size: 12px;
+}
+
+/* ── Password input ─────────────────────────────────────────────────────────── */
+.ibar-password-input {
+  width: 260px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  background: var(--gray-50);
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.ibar-password-input:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px var(--blue-100);
+}
+
+/* ── Submit button ──────────────────────────────────────────────────────────── */
+.ibar-submit,
+input[type="submit"] {
+  background: var(--blue-700);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+.ibar-submit:hover,
+input[type="submit"]:hover {
+  background: var(--blue-800);
+}
+.ibar-submit:active,
+input[type="submit"]:active {
+  transform: scale(0.98);
+}
+
+/* ── Form inputs (general) ─────────────────────────────────────────────────── */
+input[type="text"],
+input[type="search"],
+input[type="number"],
+input[type="email"],
+textarea,
+select {
+  padding: 7px 10px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 7px;
+  background: var(--gray-50);
+  font-size: 13px;
+  color: var(--gray-900);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px var(--blue-100);
+  background: #fff;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────────────────── */
+table.layout { width: 100%; border-collapse: collapse; }
+
+/* Data tables */
+table.nowrap,
+#content > form table,
+.table-list table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  border: 1px solid var(--gray-200);
+}
+
+table.nowrap thead tr,
+table thead tr {
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+table.nowrap thead th,
+table thead th {
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  white-space: nowrap;
+}
+
+table.nowrap tbody td,
+table tbody td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+table.nowrap tbody tr:last-child td,
+table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+table.nowrap tbody tr:hover td,
+table tbody tr:hover td {
+  background: var(--blue-50);
+}
+
+/* Checkboxes in table rows */
+table td input[type="checkbox"] { cursor: pointer; }
+
+/* ── Navigation sidebar ─────────────────────────────────────────────────────── */
+#menu .column {
+  padding: 8px 0;
+}
+
+#menu a, #menu span {
+  display: block;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+#menu a:hover {
+  background: rgba(255,255,255,.12);
+  text-decoration: none;
+}
+
+#menu .active {
+  background: rgba(255,255,255,.2);
+  font-weight: 600;
+}
+
+/* ── Page titles & sections ──────────────────────────────────────────────────── */
+h2, h3 {
+  color: var(--gray-900);
+  font-weight: 700;
+}
+
+/* ── Alerts / messages ──────────────────────────────────────────────────────── */
+p.message {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  font-size: 13px;
+}
+
+p.error {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  font-size: 13px;
+}
+
+/* ── Pagination ─────────────────────────────────────────────────────────────── */
+p.links { font-size: 13px; }
+
+/* ── Action buttons in content ──────────────────────────────────────────────── */
+#content .links a,
+p > a.jush-sql {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: var(--blue-700);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  transition: background .15s;
+}
+#content .links a:hover {
+  background: var(--blue-800);
+  text-decoration: none;
+}
+
+/* ── NULL values ──────────────────────────────────────────────────────────────── */
+td.null { color: var(--gray-400); font-style: italic; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  #content { margin: 16px auto; }
+  .ibar-password-input { width: 100%; }
+}

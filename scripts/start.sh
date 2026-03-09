@@ -36,10 +36,10 @@ log "Backend démarré (PID $BACKEND_PID) sur le port $PORT"
 ADMINER_DIR="$PROJECT_DIR/adminer"
 if [ -f "$ADMINER_DIR/adminer.php" ] && command -v php &>/dev/null; then
   cd "$ADMINER_DIR"
-  nohup php -S 0.0.0.0:$ADMINER_PORT adminer.php > "$PROJECT_DIR/logs/adminer.log" 2>&1 &
+  nohup php -S 0.0.0.0:$ADMINER_PORT ibar-adminer.php > "$PROJECT_DIR/logs/adminer.log" 2>&1 &
   ADMINER_PID=$!
   echo $ADMINER_PID > "$PROJECT_DIR/logs/adminer.pid"
-  log "Adminer démarré (PID $ADMINER_PID) sur le port $ADMINER_PORT"
+  log "IBar Admin démarré (PID $ADMINER_PID) sur le port $ADMINER_PORT"
 else
   warn "Adminer non disponible. Lancez d'abord: bash scripts/install.sh"
 fi

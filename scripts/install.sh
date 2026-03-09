@@ -102,11 +102,19 @@ ADMINER_DIR="$PROJECT_DIR/adminer"
 mkdir -p "$ADMINER_DIR"
 if [ ! -f "$ADMINER_DIR/adminer.php" ]; then
   log "Téléchargement d'Adminer..."
-  curl -L -o "$ADMINER_DIR/adminer.php" \
-    "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1-pgsql.php"
+  curl -fsSL -o "$ADMINER_DIR/adminer.php" \
+    "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1-pgsql.php" \
+  || { warn "Téléchargement Adminer échoué. Vérifiez la connexion internet."; }
   log "Adminer téléchargé"
 else
   log "Adminer déjà présent"
+fi
+
+# Verify the IBar Adminer wrapper is present (committed in repo)
+if [ ! -f "$ADMINER_DIR/ibar-adminer.php" ]; then
+  warn "ibar-adminer.php introuvable — interface admin non personnalisée"
+else
+  log "Interface IBar Admin prête"
 fi
 
 echo ""

@@ -154,13 +154,11 @@ cd frontend && npm run dev
 | API | `http://SERVER_IP:8000/api` |
 | Adminer (DB) | `http://SERVER_IP:9000` |
 
-### Connexion Adminer
+### Connexion IBar Admin
 
-- **Système** : PostgreSQL
-- **Serveur** : localhost
-- **Utilisateur** : valeur de `DB_USER` dans `.env`
-- **Mot de passe** : valeur de `DB_PASSWORD` dans `.env`
-- **Base de données** : valeur de `DB_NAME` dans `.env`
+L'interface admin est pré-configurée : le serveur, l'utilisateur et la base de données sont remplis automatiquement depuis le `.env`.
+
+Il suffit d'entrer le **mot de passe** (valeur `DB_PASSWORD` dans `.env`).
 
 ---
 
