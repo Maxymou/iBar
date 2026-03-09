@@ -46,13 +46,6 @@ const RestaurantDetail = () => {
     }
   };
 
-  const handleNav = (type) => {
-    if (!restaurant) return;
-    const links = openNavigation(restaurant.address, restaurant.latitude, restaurant.longitude);
-    window.open(links[type], '_blank');
-    setNavOpen(false);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">

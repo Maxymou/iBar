@@ -104,7 +104,7 @@ const MapView = ({ items, userLocation, type, onView }) => {
         </Marker>
       ))}
 
-      {userLocation && <RecenterMap center={null} />}
+      {userLocation && <RecenterMap center={[userLocation.lat, userLocation.lng]} />}
     </MapContainer>
   );
 };

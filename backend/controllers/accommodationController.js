@@ -71,6 +71,7 @@ const getOne = async (req, res) => {
     }
     res.json(result.rows[0]);
   } catch (err) {
+    console.error('Accommodation getOne error:', err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };
@@ -184,6 +185,7 @@ const remove = async (req, res) => {
     }
     res.json({ message: 'Hébergement supprimé avec succès' });
   } catch (err) {
+    console.error('Accommodation remove error:', err);
     res.status(500).json({ error: 'Erreur lors de la suppression' });
   }
 };
