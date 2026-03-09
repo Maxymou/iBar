@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* iOS-style base styles */
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+/* Smooth scrolling */
+.scroll-smooth {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Safe area insets for notched phones */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Leaflet map */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* Slide in animation */
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-slide-in-left  { animation: slideInLeft 0.3s ease-out; }
+.animate-slide-in-up    { animation: slideInUp  0.35s ease-out; }
+.animate-fade-in        { animation: fadeIn     0.2s ease-out; }
+
+/* Star rating */
+.star-rating {
+  display: flex;
+  gap: 2px;
+}
+
+/* Floating button */
+.fab {
+  @apply fixed bottom-24 right-4 w-14 h-14 bg-primary-600 text-white rounded-full
+         shadow-ios-lg flex items-center justify-center text-2xl z-40
+         active:scale-95 transition-transform;
+}
+
+/* Card styles */
+.ios-card {
+  @apply bg-white rounded-2xl shadow-card overflow-hidden;
+}
+
+/* Bottom nav */
+.bottom-nav {
+  @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100
+         flex items-center justify-around px-4 z-50;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Top header */
+.top-header {
+  @apply fixed top-0 left-0 right-0 bg-white border-b border-gray-100 z-40
+         flex items-center justify-between px-4;
+  padding-top: env(safe-area-inset-top, 0px);
+  height: calc(56px + env(safe-area-inset-top, 0px));
+}
+
+/* Input style */
+.ios-input {
+  @apply w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3
+         text-base outline-none focus:border-primary-500 focus:ring-2
+         focus:ring-primary-100 transition-all;
+}
+
+/* Button style */
+.ios-button {
+  @apply w-full py-3 px-6 rounded-xl font-semibold text-base
+         transition-all active:scale-95;
+}
+
+.ios-button-primary {
+  @apply ios-button bg-primary-600 text-white hover:bg-primary-700;
+}
+
+.ios-button-secondary {
+  @apply ios-button bg-gray-100 text-gray-700 hover:bg-gray-200;
+}
+
+/* Scrollable content area */
+.content-area {
+  position: fixed;
+  top: calc(56px + env(safe-area-inset-top, 0px));
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  left: 0;
+  right: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Badge */
+.badge {
+  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+}

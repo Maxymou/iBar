@@ -1,0 +1,190 @@
+import { useState, useRef } from 'react';
+import { useAuth } from '../../store/AuthContext';
+import { useToast } from '../ui/Toast';
+import Modal from '../ui/Modal';
+import api from '../../services/api';
+import { formatDate } from '../../utils/navigation';
+
+const UserDrawer = ({ isOpen, onClose }) => {
+  const { user, logout, updateUser } = useAuth();
+  const { toast } = useToast();
+  const [editOpen, setEditOpen] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '' });
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
+  const [loading, setLoading] = useState(false);
+  const avatarRef = useRef();
+
+  const openEdit = () => {
+    setForm({ name: user.name, email: user.email });
+    setEditOpen(true);
+    onClose();
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const fd = new FormData();
+      if (form.name !== user.name) fd.append('name', form.name);
+      if (form.email !== user.email) fd.append('email', form.email);
+      if (form.avatar) fd.append('avatar', form.avatar);
+
+      const res = await api.put('/users/profile', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      updateUser(res.data);
+      setEditOpen(false);
+      toast('Profil mis à jour', 'success');
+    } catch (err) {
+      toast(err.response?.data?.error || 'Erreur lors de la mise à jour', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (pwForm.next !== pwForm.confirm) {
+      toast('Les mots de passe ne correspondent pas', 'error');
+      return;
+    }
+    setLoading(true);
+    try {
+      await api.post('/auth/change-password', {
+        currentPassword: pwForm.current,
+        newPassword: pwForm.next,
+      });
+      setPwOpen(false);
+      setPwForm({ current: '', next: '', confirm: '' });
+      toast('Mot de passe modifié', 'success');
+    } catch (err) {
+      toast(err.response?.data?.error || 'Erreur', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!user) return null;
+
+  return (
+    <>
+      {/* Overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 z-[150]">
+          <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
+
+          {/* Drawer */}
+          <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-ios-lg
+                          animate-slide-in-left flex flex-col"
+               style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+
+            {/* Header */}
+            <div className="bg-gradient-to-br from-primary-600 to-primary-800 px-5 pt-8 pb-6">
+              <div className="flex justify-end mb-4">
+                <button onClick={onClose}
+                        className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
+                  ×
+                </button>
+              </div>
+
+              {/* Avatar */}
+              <div className="flex flex-col items-center text-center">
+                <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center
+                                overflow-hidden mb-3 border-2 border-white/30">
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-3xl text-white font-bold">
+                      {user.name?.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-white font-bold text-lg">{user.name}</h3>
+                <p className="text-primary-200 text-sm">{user.email}</p>
+                <p className="text-primary-300 text-xs mt-1">
+                  Membre depuis {formatDate(user.created_at)}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              <DrawerItem icon="✏️" label="Modifier le profil" onClick={openEdit} />
+              <DrawerItem icon="🔑" label="Changer le mot de passe" onClick={() => { setPwOpen(true); onClose(); }} />
+              <div className="border-t border-gray-100 my-2" />
+              <DrawerItem icon="🚪" label="Se déconnecter" onClick={logout} danger />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      <Modal isOpen={editOpen} onClose={() => setEditOpen(false)} title="Modifier le profil"
+             footer={
+               <button onClick={handleEditSubmit} disabled={loading}
+                       className="ios-button-primary w-full disabled:opacity-50">
+                 {loading ? 'Enregistrement...' : 'Enregistrer'}
+               </button>
+             }>
+        <form onSubmit={handleEditSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Photo de profil</label>
+            <input ref={avatarRef} type="file" accept="image/*" className="hidden"
+                   onChange={e => setForm(p => ({ ...p, avatar: e.target.files[0] }))} />
+            <button type="button" onClick={() => avatarRef.current.click()}
+                    className="w-full py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm">
+              {form.avatar ? form.avatar.name : '📷 Choisir une photo'}
+            </button>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
+            <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                   className="ios-input" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+                   className="ios-input" />
+          </div>
+        </form>
+      </Modal>
+
+      {/* Change Password Modal */}
+      <Modal isOpen={pwOpen} onClose={() => setPwOpen(false)} title="Changer le mot de passe"
+             footer={
+               <button onClick={handlePasswordSubmit} disabled={loading}
+                       className="ios-button-primary w-full disabled:opacity-50">
+                 {loading ? 'Modification...' : 'Modifier'}
+               </button>
+             }>
+        <form onSubmit={handlePasswordSubmit} className="space-y-4">
+          {[
+            { label: 'Mot de passe actuel', key: 'current' },
+            { label: 'Nouveau mot de passe', key: 'next' },
+            { label: 'Confirmer le nouveau mot de passe', key: 'confirm' },
+          ].map(field => (
+            <div key={field.key}>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">{field.label}</label>
+              <input type="password" value={pwForm[field.key]}
+                     onChange={e => setPwForm(p => ({ ...p, [field.key]: e.target.value }))}
+                     className="ios-input" />
+            </div>
+          ))}
+        </form>
+      </Modal>
+    </>
+  );
+};
+
+const DrawerItem = ({ icon, label, onClick, danger }) => (
+  <button onClick={onClick}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left
+                      transition-colors active:bg-gray-50
+                      ${danger ? 'text-red-500' : 'text-gray-700'}`}>
+    <span className="text-xl">{icon}</span>
+    <span className="font-medium">{label}</span>
+  </button>
+);
+
+export default UserDrawer;

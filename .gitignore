@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment
+.env
+backend/.env
+
+# Build
+frontend/dist/
+frontend/.vite/
+
+# Uploads (user data)
+backend/uploads/
+
+# Logs
+logs/
+*.log
+
+# Backups
+backups/
+
+# Exports
+exports/
+
+# Adminer (downloaded separately)
+adminer/adminer.php
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
