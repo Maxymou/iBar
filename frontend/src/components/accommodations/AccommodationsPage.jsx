@@ -21,13 +21,16 @@ const AccommodationsPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const locationLat = location?.lat;
+  const locationLng = location?.lng;
+
   const load = useCallback(async () => {
     try {
       const params = new URLSearchParams({ sort });
       if (search) params.set('search', search);
-      if (sort === 'distance' && location) {
-        params.set('lat', location.lat);
-        params.set('lng', location.lng);
+      if (sort === 'distance' && locationLat && locationLng) {
+        params.set('lat', locationLat);
+        params.set('lng', locationLng);
       }
 
       const res = await api.get(`/accommodations?${params}`);
@@ -44,7 +47,7 @@ const AccommodationsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [search, sort, location]);
+  }, [search, sort, locationLat, locationLng]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -56,10 +59,8 @@ const AccommodationsPage = () => {
     });
   };
 
-  const filtered = items.filter(i =>
-    !search || i.name?.toLowerCase().includes(search.toLowerCase()) ||
-    i.address?.toLowerCase().includes(search.toLowerCase())
-  );
+  // No client-side filter — the API already applies the search parameter
+  const filtered = items;
 
   return (
     <div className="h-full flex flex-col">

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import StarRating from '../ui/StarRating';
 import ConfirmModal from '../ui/ConfirmModal';
 import Modal from '../ui/Modal';
+import { InfoCard, MetaRow } from '../ui/InfoCard';
 import RestaurantForm from './RestaurantForm';
 import { useToast } from '../ui/Toast';
 import api from '../../services/api';
@@ -194,35 +195,21 @@ const RestaurantDetail = () => {
       <Modal isOpen={navOpen} onClose={() => setNavOpen(false)} title="Naviguer vers">
         <p className="text-gray-600 mb-4">{restaurant.address}</p>
         <div className="space-y-3">
-          <a href={navLinks.waze} target="_blank" rel="noopener noreferrer"
-             className="flex items-center gap-3 p-4 rounded-xl border border-gray-200 active:bg-gray-50"
-             onClick={() => setNavOpen(false)}>
-            <span className="text-2xl">🚗</span>
-            <div>
-              <p className="font-semibold text-gray-900">Waze</p>
-              <p className="text-sm text-gray-500">Navigation en temps réel</p>
-            </div>
-          </a>
-          <a href={navLinks.google} target="_blank" rel="noopener noreferrer"
-             className="flex items-center gap-3 p-4 rounded-xl border border-gray-200 active:bg-gray-50"
-             onClick={() => setNavOpen(false)}>
-            <span className="text-2xl">🗺️</span>
-            <div>
-              <p className="font-semibold text-gray-900">Google Maps</p>
-              <p className="text-sm text-gray-500">Itinéraire Google</p>
-            </div>
-          </a>
-          {isIOS() && (
-            <a href={navLinks.apple} target="_blank" rel="noopener noreferrer"
+          {[
+            { href: navLinks.waze,   icon: '🚗', label: 'Waze',        desc: 'Navigation en temps réel' },
+            { href: navLinks.google, icon: '🗺️', label: 'Google Maps', desc: 'Itinéraire Google' },
+            ...(isIOS() ? [{ href: navLinks.apple, icon: '🍎', label: 'Plans Apple', desc: 'Application Plans' }] : []),
+          ].map(link => (
+            <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
                className="flex items-center gap-3 p-4 rounded-xl border border-gray-200 active:bg-gray-50"
                onClick={() => setNavOpen(false)}>
-              <span className="text-2xl">🍎</span>
+              <span className="text-2xl">{link.icon}</span>
               <div>
-                <p className="font-semibold text-gray-900">Plans Apple</p>
-                <p className="text-sm text-gray-500">Application Plans</p>
+                <p className="font-semibold text-gray-900">{link.label}</p>
+                <p className="text-sm text-gray-500">{link.desc}</p>
               </div>
             </a>
-          )}
+          ))}
         </div>
       </Modal>
 
@@ -247,28 +234,5 @@ const RestaurantDetail = () => {
     </div>
   );
 };
-
-const InfoCard = ({ icon, label, value, onClick, clickable }) => (
-  <div
-    className={`ios-card p-4 ${clickable ? 'cursor-pointer active:bg-gray-50' : ''}`}
-    onClick={onClick}
-  >
-    <div className="flex items-start gap-3">
-      <span className="text-xl mt-0.5">{icon}</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
-        <p className={`text-gray-900 mt-0.5 ${clickable ? 'text-primary-600' : ''}`}>{value}</p>
-      </div>
-      {clickable && <span className="text-gray-300 mt-1">›</span>}
-    </div>
-  </div>
-);
-
-const MetaRow = ({ label, value }) => (
-  <div className="flex justify-between items-center">
-    <span className="text-sm text-gray-500">{label}</span>
-    <span className="text-sm text-gray-900 font-medium">{value}</span>
-  </div>
-);
 
 export default RestaurantDetail;

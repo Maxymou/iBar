@@ -54,11 +54,13 @@ const AppLayout = () => {
       )}
 
       {/* Main Content */}
-      <main className={`flex-1 overflow-hidden ${!isDetailPage ? 'mt-14' : ''} ${!isDetailPage ? 'mb-14' : ''}`}
-            style={{
-              marginTop: !isDetailPage ? `calc(56px + env(safe-area-inset-top))` : 0,
-              marginBottom: !isDetailPage ? `calc(56px + env(safe-area-inset-bottom))` : 0,
-            }}>
+      <main
+        className="flex-1 overflow-hidden"
+        style={{
+          marginTop:    isDetailPage ? 0 : `calc(56px + env(safe-area-inset-top))`,
+          marginBottom: isDetailPage ? 0 : `calc(56px + env(safe-area-inset-bottom))`,
+        }}
+      >
         <Routes>
           <Route path="/" element={<Navigate to="/restaurants" replace />} />
           <Route path="/restaurants" element={<RestaurantsPage />} />

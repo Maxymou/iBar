@@ -44,12 +44,13 @@ else
   warn "Adminer non disponible. Lancez d'abord: bash scripts/install.sh"
 fi
 
+SERVER_IP=$(hostname -I | awk '{print $1}')
 echo ""
 log "=========================================="
 log "✅ IBar est démarré !"
 log ""
-log "  Application:  http://$(hostname -I | awk '{print $1}'):$PORT"
-log "  Adminer:      http://$(hostname -I | awk '{print $1}'):$ADMINER_PORT"
+log "  Application:  http://$SERVER_IP:$PORT"
+log "  Adminer:      http://$SERVER_IP:$ADMINER_PORT"
 log ""
 log "Logs: tail -f $PROJECT_DIR/logs/backend.log"
 log "=========================================="

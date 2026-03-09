@@ -56,7 +56,7 @@ const login = async (req, res) => {
 
   try {
     const result = await db.query(
-      'SELECT * FROM users WHERE email = $1',
+      'SELECT id, name, email, avatar_url, password_hash FROM users WHERE email = $1',
       [email.toLowerCase()]
     );
 
@@ -109,7 +109,7 @@ const changePassword = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+    const result = await db.query('SELECT id, password_hash FROM users WHERE id = $1', [userId]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Utilisateur introuvable' });
     }
@@ -144,6 +144,7 @@ const getMe = async (req, res) => {
     }
     res.json(result.rows[0]);
   } catch (err) {
+    console.error('getMe error:', err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };

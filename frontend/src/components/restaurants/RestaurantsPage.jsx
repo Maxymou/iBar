@@ -21,13 +21,17 @@ const RestaurantsPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Use primitive coords as deps to avoid re-fetch when location object reference changes
+  const locationLat = location?.lat;
+  const locationLng = location?.lng;
+
   const loadRestaurants = useCallback(async () => {
     try {
       const params = new URLSearchParams({ sort });
       if (search) params.set('search', search);
-      if (sort === 'distance' && location) {
-        params.set('lat', location.lat);
-        params.set('lng', location.lng);
+      if (sort === 'distance' && locationLat && locationLng) {
+        params.set('lat', locationLat);
+        params.set('lng', locationLng);
       }
 
       const res = await api.get(`/restaurants?${params}`);
@@ -44,7 +48,7 @@ const RestaurantsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [search, sort, location]);
+  }, [search, sort, locationLat, locationLng]);
 
   useEffect(() => { loadRestaurants(); }, [loadRestaurants]);
 
@@ -60,11 +64,8 @@ const RestaurantsPage = () => {
     });
   };
 
-  const filtered = restaurants.filter(r =>
-    !search || r.name?.toLowerCase().includes(search.toLowerCase()) ||
-    r.address?.toLowerCase().includes(search.toLowerCase()) ||
-    r.cuisine_type?.toLowerCase().includes(search.toLowerCase())
-  );
+  // No client-side filter — the API already applies the search parameter
+  const filtered = restaurants;
 
   return (
     <div className="h-full flex flex-col">

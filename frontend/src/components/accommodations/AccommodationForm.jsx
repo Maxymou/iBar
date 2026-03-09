@@ -95,7 +95,7 @@ const AccommodationForm = ({ isOpen, onClose, accommodation, onSaved }) => {
   };
 
   const set = (field) => (e) =>
-    setForm(p => ({ ...p, [field]: e.target.value }));
+    setForm(p => ({ ...p, [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
   return (
     <Modal

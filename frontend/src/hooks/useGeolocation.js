@@ -18,7 +18,7 @@ const useGeolocation = () => {
         setLoading(false);
         setError(null);
       },
-      (err) => {
+      () => {
         setError('Impossible d\'obtenir votre position');
         setLoading(false);
       },
