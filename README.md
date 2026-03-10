@@ -7,11 +7,13 @@ Application mobile-first Progressive Web App (PWA) pour gérer vos restaurants e
 - [Stack technique](#stack-technique)
 - [Structure du projet](#structure-du-projet)
 - [Installation](#installation)
-- [Démarrage](#démarrage)
+- [Configuration .env](#configuration-env)
 - [Accès](#accès)
-- [Fonctionnalités](#fonctionnalités)
-- [API](#api)
+- [Services systemd](#services-systemd)
 - [Scripts utilitaires](#scripts-utilitaires)
+- [Démarrage manuel](#démarrage-manuel-sans-systemd)
+- [API](#api)
+- [Fonctionnalités](#fonctionnalités)
 
 ---
 
@@ -26,6 +28,7 @@ Application mobile-first Progressive Web App (PWA) pour gérer vos restaurants e
 | Images | Stockage local filesystem |
 | PWA | Service Worker, IndexedDB |
 | DB Admin | Adminer (PHP) |
+| Supervision | systemd |
 
 ---
 
@@ -39,7 +42,7 @@ iBar/
 │   ├── models/            # Connexion DB
 │   ├── routes/            # Routes API
 │   ├── services/          # Image, export
-│   ├── uploads/           # Photos (runtime)
+│   ├── uploads/           # Photos (runtime, git-ignoré)
 │   └── server.js
 ├── frontend/
 │   ├── public/
@@ -59,16 +62,16 @@ iBar/
 ├── database/
 │   └── schema.sql         # Schéma PostgreSQL
 ├── scripts/
-│   ├── install.sh         # Installation complète
-│   ├── start.sh           # Démarrage
+│   ├── install.sh         # Installation complète + systemd
+│   ├── start.sh           # Démarrage (systemd ou manuel)
 │   ├── start-adminer.sh   # Démarrage Adminer seul
-│   ├── stop.sh            # Arrêt
-│   ├── backup.sh          # Sauvegarde DB
+│   ├── stop.sh            # Arrêt (systemd ou manuel)
+│   ├── backup.sh          # Sauvegarde DB + uploads
 │   ├── restore.sh         # Restauration DB
 │   └── export-csv.sh      # Export CSV
 ├── adminer/               # Interface admin DB (runtime)
-├── logs/                  # Logs serveur (runtime)
-└── .env                   # Configuration (à créer)
+├── logs/                  # Logs serveur (runtime, git-ignoré)
+└── .env                   # Configuration (à créer depuis .env.example)
 ```
 
 ---
@@ -77,75 +80,95 @@ iBar/
 
 ### Prérequis
 
-- Ubuntu Server
-- Node.js 18+ (installé automatiquement si absent)
-- PostgreSQL (installé automatiquement si absent)
-- PHP CLI (installé automatiquement si absent, pour Adminer)
+- Ubuntu Server 20.04 LTS ou supérieur (ou Debian)
+- Accès `sudo`
+- Connexion internet
 
-### Étape 1 — Configurer l'environnement
+Les dépendances suivantes sont installées automatiquement si absentes :
+- Node.js 20.x (version 18+ requise)
+- PostgreSQL
+- PHP CLI + extensions `pgsql` et `mbstring`
+
+### Étape 1 — Cloner le dépôt
+
+```bash
+git clone <url-du-depot> iBar
+cd iBar
+```
+
+### Étape 2 — Configurer l'environnement
 
 ```bash
 cp .env.example .env
 nano .env
 ```
 
-Variables importantes à modifier :
+Variables **obligatoires** à modifier :
 
 ```env
 DB_PASSWORD=votre_mot_de_passe_fort
-JWT_SECRET=votre_secret_jwt_32_chars_minimum
-JWT_REFRESH_SECRET=votre_secret_refresh_32_chars
+JWT_SECRET=<sortie de : openssl rand -hex 32>
+JWT_REFRESH_SECRET=<sortie de : openssl rand -hex 32>
 ```
 
-> **Important :** le script d'installation vérifie que `.env` existe et est configuré avant de continuer. Il s'arrête automatiquement si le fichier vient d'être créé depuis le template.
+> **Important :** le script d'installation valide ces variables et refuse les valeurs placeholder (`changeme`, etc.) ainsi que les secrets JWT inférieurs à 32 caractères. Il s'arrête automatiquement si `.env` vient d'être créé depuis le template.
 
-### Étape 2 — Lancer l'installation
+### Étape 3 — Lancer l'installation
 
 ```bash
 bash scripts/install.sh
 ```
 
-Ce script va :
-1. Installer Node.js / PostgreSQL / PHP si nécessaire
-2. Créer l'utilisateur et la base de données PostgreSQL
-3. Appliquer le schéma SQL
-4. Installer les dépendances npm
-5. Compiler le frontend
-6. Télécharger Adminer
+Le script est **idempotent** (ré-exécutable sans danger). Il effectue dans l'ordre :
+
+1. Détection Ubuntu/Debian
+2. Installation des outils de base (`curl`, `git`) si absents
+3. Installation de Node.js 20.x si absent ou version < 18
+4. Installation et démarrage de PostgreSQL si absent
+5. Installation de PHP CLI si absent
+6. Validation du `.env` (variables critiques, placeholders, longueur JWT)
+7. Création de l'utilisateur et de la base PostgreSQL
+8. Application du schéma SQL + attribution des permissions à l'utilisateur app
+9. Installation des dépendances npm (backend `--omit=dev`, frontend)
+10. Compilation du frontend Vite
+11. Création des répertoires runtime (`logs/`, `backend/uploads/`)
+12. Téléchargement d'Adminer v4.8.1
+13. Création et activation des services systemd `ibar` et `ibar-adminer`
+14. Démarrage des services
+15. Vérifications post-installation (PostgreSQL, backend sur `:8000`, Adminer sur `:9000`)
+16. Affichage du résumé avec les URLs
 
 ---
 
-## Démarrage
+## Configuration .env
+
+| Variable | Description | Défaut | Obligatoire |
+|----------|-------------|--------|-------------|
+| `NODE_ENV` | Environnement Node.js | `production` | Non |
+| `PORT` | Port du backend | `8000` | Non |
+| `DB_HOST` | Hôte PostgreSQL | `localhost` | Non |
+| `DB_PORT` | Port PostgreSQL | `5432` | Non |
+| `DB_NAME` | Nom de la base de données | `ibar` | Non |
+| `DB_USER` | Utilisateur PostgreSQL | `ibar_user` | Non |
+| `DB_PASSWORD` | Mot de passe PostgreSQL | — | **Oui** |
+| `JWT_SECRET` | Secret access token (32+ chars) | — | **Oui** |
+| `JWT_REFRESH_SECRET` | Secret refresh token (32+ chars) | — | **Oui** |
+| `JWT_EXPIRES_IN` | Durée de validité access token | `15m` | Non |
+| `JWT_REFRESH_EXPIRES_IN` | Durée de validité refresh token | `7d` | Non |
+| `UPLOAD_DIR` | Répertoire des photos | `./uploads` | Non |
+| `MAX_FILE_SIZE` | Taille max image (bytes) | `10485760` (10 Mo) | Non |
+| `FRONTEND_URL` | URL frontend pour CORS | `http://localhost:8000` | Non |
+| `ADMINER_PORT` | Port Adminer | `9000` | Non |
+| `EXPORT_EMAIL` | Email du compte pour `export-csv.sh` | — | Non |
+| `EXPORT_PASSWORD` | Mot de passe du compte pour `export-csv.sh` | — | Non |
+
+**Générer des secrets JWT :**
 
 ```bash
-bash scripts/start.sh
+openssl rand -hex 32
 ```
 
-Pour arrêter :
-
-```bash
-bash scripts/stop.sh
-```
-
-### Démarrage manuel
-
-```bash
-# Backend + frontend (production)
-cd backend && npm start
-
-# Adminer séparé
-bash scripts/start-adminer.sh
-```
-
-### Démarrage en développement
-
-```bash
-# Terminal 1 — Backend avec hot reload
-cd backend && npm run dev
-
-# Terminal 2 — Frontend avec HMR
-cd frontend && npm run dev
-```
+**Note `FRONTEND_URL` :** en production, remplacez `localhost` par l'IP ou le domaine de votre serveur (ex. `http://192.168.1.100:8000`). Cette valeur contrôle la politique CORS du backend.
 
 ---
 
@@ -155,13 +178,187 @@ cd frontend && npm run dev
 |---------|-----|
 | Application | `http://SERVER_IP:8000` |
 | API | `http://SERVER_IP:8000/api` |
-| Adminer (DB) | `http://SERVER_IP:9000` |
+| Health check | `http://SERVER_IP:8000/api/health` |
+| Adminer (DB admin) | `http://SERVER_IP:9000` |
 
-### Connexion IBar Admin
+### Connexion IBar Admin (Adminer)
 
-L'interface admin est pré-configurée : le serveur, l'utilisateur et la base de données sont remplis automatiquement depuis le `.env`.
+L'interface est pré-configurée depuis `.env` : le serveur, l'utilisateur et la base de données sont remplis automatiquement.
 
-Il suffit d'entrer le **mot de passe** (valeur `DB_PASSWORD` dans `.env`).
+Saisissez uniquement le **mot de passe** (valeur `DB_PASSWORD` dans `.env`).
+
+---
+
+## Services systemd
+
+L'installation crée et active automatiquement deux services :
+
+| Service | Rôle | Port |
+|---------|------|------|
+| `ibar` | Backend Node.js + frontend statique | 8000 |
+| `ibar-adminer` | Interface Adminer PHP | 9000 |
+
+Les services **démarrent automatiquement au boot** du serveur (`WantedBy=multi-user.target`).
+
+### Statut des services
+
+```bash
+sudo systemctl status ibar
+sudo systemctl status ibar-adminer
+```
+
+### Démarrer / Arrêter / Redémarrer
+
+```bash
+# Via les scripts du projet (détection automatique de systemd)
+bash scripts/start.sh
+bash scripts/stop.sh
+
+# Directement avec systemctl
+sudo systemctl start ibar ibar-adminer
+sudo systemctl stop ibar ibar-adminer
+sudo systemctl restart ibar
+sudo systemctl restart ibar-adminer
+```
+
+### Consulter les logs
+
+```bash
+# Flux de logs en temps réel
+sudo journalctl -u ibar -f
+sudo journalctl -u ibar-adminer -f
+
+# Dernières 100 lignes
+sudo journalctl -u ibar -n 100
+
+# Depuis le démarrage du service
+sudo journalctl -u ibar --since "today"
+
+# Fichiers de log directs
+tail -f logs/backend.log
+tail -f logs/adminer.log
+```
+
+### Mettre à jour l'application
+
+```bash
+git pull
+bash scripts/install.sh
+```
+
+Le script est idempotent : il reconstruit le frontend, réinstalle les dépendances et redémarre les services sans toucher à la base de données si elle existe déjà.
+
+---
+
+## Scripts utilitaires
+
+### Sauvegarde
+
+```bash
+bash scripts/backup.sh
+```
+
+Crée dans `backups/` :
+- `ibar_backup_YYYYMMDD_HHMMSS.sql` — dump PostgreSQL complet
+- `uploads_YYYYMMDD_HHMMSS.tar.gz` — archive des photos uploadées
+
+Les 10 dernières sauvegardes de chaque type sont conservées automatiquement.
+
+### Restauration
+
+```bash
+bash scripts/restore.sh backups/ibar_backup_20250101_120000.sql
+```
+
+> ⚠️ Opération destructive — une confirmation explicite est demandée avant l'écrasement de la base.
+
+### Export CSV
+
+```bash
+bash scripts/export-csv.sh
+```
+
+Nécessite `EXPORT_EMAIL` et `EXPORT_PASSWORD` dans `.env` (compte utilisateur IBar existant).
+
+Génère dans `exports/` :
+- `restaurants_YYYYMMDD_HHMMSS.csv`
+- `hebergements_YYYYMMDD_HHMMSS.csv`
+
+---
+
+## Démarrage manuel (sans systemd)
+
+Pour les environnements sans systemd (développement local, CI) :
+
+```bash
+# Démarrage manuel (nohup)
+bash scripts/start.sh
+
+# Arrêt manuel (via PID files)
+bash scripts/stop.sh
+
+# Adminer seul
+bash scripts/start-adminer.sh
+```
+
+**Mode développement :**
+
+```bash
+# Terminal 1 — Backend avec hot reload (nodemon)
+cd backend && npm run dev
+
+# Terminal 2 — Frontend avec HMR (Vite dev server, port 5173)
+cd frontend && npm run dev
+```
+
+En mode développement, le frontend proxie automatiquement les requêtes `/api` et `/uploads` vers `http://localhost:8000`.
+
+---
+
+## API
+
+### Auth
+
+```
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/refresh
+POST /api/auth/change-password
+GET  /api/auth/me
+```
+
+### Restaurants
+
+```
+GET    /api/restaurants?search=&sort=recent|rating|distance&lat=&lng=
+GET    /api/restaurants/:id
+POST   /api/restaurants          (multipart/form-data)
+PUT    /api/restaurants/:id      (multipart/form-data)
+DELETE /api/restaurants/:id
+```
+
+### Hébergements
+
+```
+GET    /api/accommodations?search=&sort=recent|rating|distance&lat=&lng=
+GET    /api/accommodations/:id
+POST   /api/accommodations
+PUT    /api/accommodations/:id
+DELETE /api/accommodations/:id
+```
+
+### Export
+
+```
+GET /api/export/restaurants     → CSV
+GET /api/export/accommodations  → CSV
+```
+
+### Monitoring
+
+```
+GET /api/health    → { "status": "ok", "uptime": <secondes> }
+```
 
 ---
 
@@ -175,99 +372,25 @@ Il suffit d'entrer le **mot de passe** (valeur `DB_PASSWORD` dans `.env`).
 - JWT avec refresh token automatique
 
 ### Restaurants
-- Ajout, modification, suppression (soft delete)
+- Ajout, modification, suppression (soft delete / archivage)
 - Photo (capture caméra ou galerie)
-- Champs : nom, téléphone, adresse, bar (toggle), cuisine, note (★), commentaire, date visite
+- Champs : nom, téléphone, adresse, bar (toggle), cuisine, note (★), commentaire, date de visite
 - Géolocalisation GPS
-- Vue liste avec recherche
-- Vue carte Leaflet + OpenStreetMap
+- Vue liste avec recherche plein texte
+- Vue carte interactive (Leaflet + OpenStreetMap)
 - Tri par note / distance / date
-- Appel direct (popup confirmation)
-- Navigation : Waze, Google Maps, Plans Apple (auto-détection iOS)
+- Appel direct (popup de confirmation)
+- Navigation externe : Waze, Google Maps, Plans Apple (auto-détection iOS)
 
 ### Hébergements
 - Même architecture que les restaurants
-- Champs spécifiques : prix/nuit, nb chambres, Wi-Fi, parking
+- Champs spécifiques : prix/nuit, nombre de chambres, Wi-Fi, parking
 
-### Mode hors ligne
-- Cache des données via Service Worker
-- Stockage IndexedDB
-- Affichage des données en cache si hors ligne
+### Mode hors ligne (PWA)
+- Cache des ressources statiques via Service Worker
+- Données mises en cache dans IndexedDB
+- Affichage des données en cache en l'absence de connexion
 
-### Export
+### Export et sauvegarde
 - Export CSV restaurants / hébergements
-- Sauvegarde / restauration de la base de données
-
----
-
-## API
-
-### Auth
-```
-POST /api/auth/register
-POST /api/auth/login
-POST /api/auth/refresh
-POST /api/auth/change-password
-GET  /api/auth/me
-```
-
-### Restaurants
-```
-GET    /api/restaurants?search=&sort=recent|rating|distance&lat=&lng=
-GET    /api/restaurants/:id
-POST   /api/restaurants          (multipart/form-data)
-PUT    /api/restaurants/:id      (multipart/form-data)
-DELETE /api/restaurants/:id
-```
-
-### Hébergements
-```
-GET    /api/accommodations?search=&sort=recent|rating|distance&lat=&lng=
-GET    /api/accommodations/:id
-POST   /api/accommodations
-PUT    /api/accommodations/:id
-DELETE /api/accommodations/:id
-```
-
-### Export
-```
-GET /api/export/restaurants     → CSV
-GET /api/export/accommodations  → CSV
-```
-
----
-
-## Scripts utilitaires
-
-```bash
-# Sauvegarde DB + uploads
-bash scripts/backup.sh
-
-# Restauration depuis sauvegarde
-bash scripts/restore.sh backups/ibar_backup_20241201_120000.sql
-
-# Export CSV (nécessite EXPORT_EMAIL + EXPORT_PASSWORD dans .env)
-bash scripts/export-csv.sh
-```
-
----
-
-## Variables d'environnement
-
-| Variable | Description | Défaut |
-|----------|-------------|--------|
-| `PORT` | Port du backend | `8000` |
-| `DB_HOST` | Hôte PostgreSQL | `localhost` |
-| `DB_PORT` | Port PostgreSQL | `5432` |
-| `DB_NAME` | Nom de la base | `ibar` |
-| `DB_USER` | Utilisateur DB | `ibar_user` |
-| `DB_PASSWORD` | Mot de passe DB | — |
-| `JWT_SECRET` | Secret JWT (32+ chars) | — |
-| `JWT_REFRESH_SECRET` | Secret refresh JWT | — |
-| `JWT_EXPIRES_IN` | Durée access token | `15m` |
-| `JWT_REFRESH_EXPIRES_IN` | Durée refresh token | `7d` |
-| `UPLOAD_DIR` | Répertoire uploads | `./uploads` |
-| `MAX_FILE_SIZE` | Taille max image (bytes) | `10485760` |
-| `ADMINER_PORT` | Port Adminer | `9000` |
-| `EXPORT_EMAIL` | Email du compte pour export CSV | — |
-| `EXPORT_PASSWORD` | Mot de passe du compte pour export CSV | — |
+- Sauvegarde et restauration complète de la base de données

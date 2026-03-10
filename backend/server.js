@@ -59,6 +59,11 @@ app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/export', exportRoutes);
 
+// Health check (used by install.sh and monitoring)
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', uptime: Math.floor(process.uptime()) });
+});
+
 // Serve frontend in production
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 app.get('*', (req, res) => {
