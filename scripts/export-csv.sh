@@ -7,19 +7,26 @@ EXPORT_DIR="$PROJECT_DIR/exports"
 
 set -a; source "$PROJECT_DIR/.env"; set +a
 
+if [ -z "$EXPORT_EMAIL" ] || [ -z "$EXPORT_PASSWORD" ]; then
+  echo "❌ EXPORT_EMAIL et EXPORT_PASSWORD doivent être définis dans .env"
+  exit 1
+fi
+
 mkdir -p "$EXPORT_DIR"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 echo "📊 Export des données en CSV..."
 
-# Get auth token
-TOKEN=$(curl -s -X POST "http://localhost:${PORT:-8000}/api/auth/login" \
+# Get auth token (python3 is always available on Ubuntu for robust JSON parsing)
+RESPONSE=$(curl -s -X POST "http://localhost:${PORT:-8000}/api/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"'$EXPORT_EMAIL'","password":"'$EXPORT_PASSWORD'"}' | \
-  grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4)
+  -d "{\"email\":\"$EXPORT_EMAIL\",\"password\":\"$EXPORT_PASSWORD\"}")
+
+TOKEN=$(echo "$RESPONSE" | python3 -c \
+  "import sys, json; d=json.load(sys.stdin); print(d.get('accessToken',''))" 2>/dev/null)
 
 if [ -z "$TOKEN" ]; then
-  echo "❌ Authentification échouée. Définissez EXPORT_EMAIL et EXPORT_PASSWORD dans .env"
+  echo "❌ Authentification échouée. Vérifiez EXPORT_EMAIL et EXPORT_PASSWORD dans .env"
   exit 1
 fi
 

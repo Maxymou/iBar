@@ -61,6 +61,7 @@ iBar/
 ├── scripts/
 │   ├── install.sh         # Installation complète
 │   ├── start.sh           # Démarrage
+│   ├── start-adminer.sh   # Démarrage Adminer seul
 │   ├── stop.sh            # Arrêt
 │   ├── backup.sh          # Sauvegarde DB
 │   ├── restore.sh         # Restauration DB
@@ -95,6 +96,8 @@ DB_PASSWORD=votre_mot_de_passe_fort
 JWT_SECRET=votre_secret_jwt_32_chars_minimum
 JWT_REFRESH_SECRET=votre_secret_refresh_32_chars
 ```
+
+> **Important :** le script d'installation vérifie que `.env` existe et est configuré avant de continuer. Il s'arrête automatiquement si le fichier vient d'être créé depuis le template.
 
 ### Étape 2 — Lancer l'installation
 
@@ -266,3 +269,5 @@ bash scripts/export-csv.sh
 | `UPLOAD_DIR` | Répertoire uploads | `./uploads` |
 | `MAX_FILE_SIZE` | Taille max image (bytes) | `10485760` |
 | `ADMINER_PORT` | Port Adminer | `9000` |
+| `EXPORT_EMAIL` | Email du compte pour export CSV | — |
+| `EXPORT_PASSWORD` | Mot de passe du compte pour export CSV | — |

@@ -11,6 +11,11 @@ if [ ! -f "$ADMINER_DIR/adminer.php" ]; then
   exit 1
 fi
 
+if ! command -v php &>/dev/null; then
+  echo "PHP non trouvé. Installez PHP: sudo apt-get install -y php-cli php-pgsql"
+  exit 1
+fi
+
 echo "Démarrage d'IBar Admin sur le port $ADMINER_PORT..."
 cd "$ADMINER_DIR"
 php -S 0.0.0.0:$ADMINER_PORT ibar-adminer.php

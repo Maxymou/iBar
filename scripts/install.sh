@@ -23,6 +23,10 @@ if ! command -v node &>/dev/null; then
   sudo apt-get install -y nodejs
 fi
 NODE_VER=$(node --version)
+NODE_MAJOR=$(echo "$NODE_VER" | sed 's/v\([0-9]*\).*/\1/')
+if [ "$NODE_MAJOR" -lt 18 ]; then
+  err "Node.js v18+ requis. Version détectée: $NODE_VER. Supprimez l'ancienne version puis relancez."
+fi
 log "Node.js: $NODE_VER"
 
 # ── Check PostgreSQL
@@ -47,8 +51,10 @@ log "── Configuration de la base de données ──"
 ENV_FILE="$PROJECT_DIR/.env"
 if [ ! -f "$ENV_FILE" ]; then
   cp "$PROJECT_DIR/.env.example" "$ENV_FILE"
-  warn "Fichier .env créé depuis .env.example"
-  warn "Veuillez éditer $ENV_FILE avant de continuer"
+  echo ""
+  err "Fichier .env créé depuis .env.example — configurez-le avant de relancer l'installation :
+  nano $ENV_FILE
+  bash scripts/install.sh"
 fi
 
 # Source env vars
@@ -70,10 +76,18 @@ sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;" 2>/dev/null 
 
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
 
-# ── Apply schema
+# ── Apply schema (superuser required for CREATE EXTENSION)
 log "Application du schéma SQL..."
-PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" \
-  -f "$PROJECT_DIR/database/schema.sql"
+sudo -u postgres psql -d "$DB_NAME" -f "$PROJECT_DIR/database/schema.sql"
+# Grant table and sequence access to app user
+sudo -u postgres psql -d "$DB_NAME" \
+  -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;"
+sudo -u postgres psql -d "$DB_NAME" \
+  -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;"
+sudo -u postgres psql -d "$DB_NAME" \
+  -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO $DB_USER;"
+sudo -u postgres psql -d "$DB_NAME" \
+  -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO $DB_USER;"
 log "Schéma appliqué avec succès"
 
 # ── Install backend deps
@@ -91,9 +105,10 @@ npm install
 npm run build
 log "Frontend compilé"
 
-# ── Prepare uploads directory
+# ── Prepare runtime directories
 mkdir -p "$PROJECT_DIR/backend/uploads"
 chmod 755 "$PROJECT_DIR/backend/uploads"
+mkdir -p "$PROJECT_DIR/logs"
 
 # ── Download Adminer
 echo ""

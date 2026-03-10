@@ -12,6 +12,11 @@ DB_USER="${DB_USER:-ibar_user}"
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
 
+if [ -z "$DB_PASSWORD" ]; then
+  echo "❌ DB_PASSWORD non défini dans .env"
+  exit 1
+fi
+
 mkdir -p "$BACKUP_DIR"
 
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
