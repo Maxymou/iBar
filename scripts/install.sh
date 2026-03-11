@@ -28,39 +28,54 @@ if [[ "$ID" != "ubuntu" && "$ID" != "debian" && "${ID_LIKE:-}" != *"debian"* ]];
 fi
 log "Système : ${PRETTY_NAME:-$ID} ✓"
 
-# Déterminer si apt-get update est nécessaire
-NEED_APT_UPDATE=false
-for cmd in curl git node psql php; do
-  command -v "$cmd" &>/dev/null || NEED_APT_UPDATE=true
-done
-if [ "$NEED_APT_UPDATE" = true ]; then
-  log "Mise à jour des dépôts apt..."
-  sudo apt-get update -qq
-fi
+# ── Mise à jour initiale des dépôts apt ───────────────────────────────────────
+log "Mise à jour des dépôts apt..."
+sudo apt-get update -qq
 
-# Outils de base
-for tool in curl git; do
-  if ! command -v "$tool" &>/dev/null; then
-    warn "$tool manquant — installation..."
-    sudo apt-get install -y "$tool"
-  fi
-done
-log "Outils de base (curl, git) : OK ✓"
+# ── Paquets système de base ────────────────────────────────────────────────────
+# curl, git       : outils de base
+# lsb-release     : requis par le script NodeSource
+# ca-certificates : certificats TLS pour les téléchargements
+# gnupg           : vérification des clés GPG pour NodeSource
+# build-essential : compilation de modules natifs Node.js (ex: sharp fallback)
+log "Installation des paquets système de base..."
+sudo apt-get install -y \
+  curl \
+  git \
+  lsb-release \
+  ca-certificates \
+  gnupg \
+  build-essential \
+  python3-minimal
+log "Paquets système : OK ✓"
 
 # ── Node.js ────────────────────────────────────────────────────────────────────
 section "Node.js"
 
 if ! command -v node &>/dev/null; then
-  warn "Node.js non trouvé. Installation de Node.js 20.x..."
+  warn "Node.js non trouvé. Installation de Node.js 20.x via NodeSource..."
   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
   sudo apt-get install -y nodejs
 fi
+
+# Vérifier que node ET npm sont disponibles
+if ! command -v node &>/dev/null; then
+  err "L'installation de Node.js a échoué.
+Vérifiez votre connexion internet et relancez : bash scripts/install.sh"
+fi
+if ! command -v npm &>/dev/null; then
+  warn "npm absent après installation Node.js — tentative d'installation séparée..."
+  sudo apt-get install -y npm || err "Impossible d'installer npm."
+fi
+
 NODE_VER=$(node --version)
 NODE_MAJOR=$(echo "$NODE_VER" | sed 's/v\([0-9]*\).*/\1/')
 if [ "$NODE_MAJOR" -lt 18 ]; then
-  err "Node.js v18+ requis. Détecté : $NODE_VER. Supprimez l'ancienne version et relancez."
+  err "Node.js v18+ requis. Détecté : $NODE_VER.
+Supprimez l'ancienne version et relancez : bash scripts/install.sh"
 fi
-log "Node.js : $NODE_VER ✓"
+NPM_VER=$(npm --version)
+log "Node.js : $NODE_VER  npm : v$NPM_VER ✓"
 
 # ── PostgreSQL ─────────────────────────────────────────────────────────────────
 section "PostgreSQL"
@@ -69,12 +84,20 @@ if ! command -v psql &>/dev/null; then
   warn "PostgreSQL non trouvé. Installation..."
   sudo apt-get install -y postgresql postgresql-contrib
 fi
-# S'assurer que PostgreSQL est actif
-if ! sudo systemctl is-active --quiet postgresql; then
-  sudo systemctl start postgresql
+
+# S'assurer que le service PostgreSQL est actif
+if ! sudo systemctl is-active --quiet postgresql 2>/dev/null; then
+  sudo systemctl start postgresql || err "Impossible de démarrer PostgreSQL.
+Diagnostiquer : sudo journalctl -u postgresql -n 30"
   log "PostgreSQL démarré"
 fi
 sudo systemctl enable postgresql 2>/dev/null || true
+
+# S'assurer que pg_isready est disponible (inclus dans postgresql-client)
+if ! command -v pg_isready &>/dev/null; then
+  sudo apt-get install -y postgresql-client
+fi
+
 log "PostgreSQL : $(psql --version | head -1) ✓"
 
 # ── PHP ────────────────────────────────────────────────────────────────────────
@@ -94,9 +117,15 @@ if [ ! -f "$ENV_FILE" ]; then
   cp "$PROJECT_DIR/.env.example" "$ENV_FILE"
   echo ""
   err "Fichier .env créé depuis .env.example.
-Configurez les variables avant de relancer l'installation :
+Configurez les variables AVANT de relancer l'installation :
 
   nano $ENV_FILE
+
+Variables obligatoires :
+  DB_PASSWORD   — mot de passe PostgreSQL (pas de valeur par défaut)
+  JWT_SECRET    — clé JWT, générez avec : openssl rand -hex 32
+  JWT_REFRESH_SECRET — même chose
+
   bash scripts/install.sh"
 fi
 
@@ -107,11 +136,13 @@ check_var() {
   local var_name="$1"
   local var_val="${!var_name:-}"
   if [ -z "$var_val" ]; then
-    err "Variable $var_name non définie dans .env"
+    err "Variable $var_name non définie dans .env
+Éditez : nano $ENV_FILE"
   fi
   if echo "$var_val" | grep -qiE "^(changeme|ibar_password|your_|example|placeholder)"; then
-    err "Variable $var_name contient une valeur placeholder ('$var_val').
-Définissez une valeur sécurisée dans $ENV_FILE"
+    err "Variable $var_name contient une valeur placeholder : '$var_val'
+Définissez une valeur sécurisée dans $ENV_FILE
+Pour les secrets JWT : openssl rand -hex 32"
   fi
 }
 
@@ -120,12 +151,18 @@ check_var "JWT_SECRET"
 check_var "JWT_REFRESH_SECRET"
 
 if [ "${#JWT_SECRET}" -lt 32 ]; then
-  err "JWT_SECRET trop court (${#JWT_SECRET} chars). Minimum 32 caractères requis.
+  err "JWT_SECRET trop court (${#JWT_SECRET} chars, minimum 32 requis).
 Générez un secret : openssl rand -hex 32"
 fi
 if [ "${#JWT_REFRESH_SECRET}" -lt 32 ]; then
-  err "JWT_REFRESH_SECRET trop court (${#JWT_REFRESH_SECRET} chars). Minimum 32 caractères requis.
+  err "JWT_REFRESH_SECRET trop court (${#JWT_REFRESH_SECRET} chars, minimum 32 requis).
 Générez un secret : openssl rand -hex 32"
+fi
+
+# Avertissement pour les caractères spéciaux dans .env (EnvironmentFile systemd)
+if echo "${DB_PASSWORD:-}" | grep -q '#'; then
+  warn "DB_PASSWORD contient '#' — dans .env, entourez la valeur de guillemets :"
+  warn "  DB_PASSWORD=\"votre#motdepasse\""
 fi
 
 # Valeurs par défaut pour les variables optionnelles
@@ -169,15 +206,22 @@ log "Base de données : OK ✓"
 # ── Dépendances backend ────────────────────────────────────────────────────────
 section "Dépendances backend"
 cd "$PROJECT_DIR/backend"
-npm install --omit=dev
+npm install --omit=dev --no-audit --no-fund
 log "Dépendances backend installées ✓"
 
 # ── Build frontend ─────────────────────────────────────────────────────────────
 section "Build frontend"
 cd "$PROJECT_DIR/frontend"
-npm install
+npm install --no-audit --no-fund
 npm run build
-log "Frontend compilé ✓"
+
+# Vérification que le build a produit les fichiers attendus
+if [ ! -f "$PROJECT_DIR/frontend/dist/index.html" ]; then
+  err "Le build frontend a échoué : frontend/dist/index.html introuvable.
+Relancez manuellement pour voir l'erreur :
+  cd frontend && npm run build"
+fi
+log "Frontend compilé ✓ (dist/index.html présent)"
 
 # ── Répertoires runtime ────────────────────────────────────────────────────────
 mkdir -p "$PROJECT_DIR/backend/uploads"
@@ -197,7 +241,8 @@ ADMINER_DIR="$PROJECT_DIR/adminer"
 mkdir -p "$ADMINER_DIR"
 if [ ! -f "$ADMINER_DIR/adminer.php" ]; then
   log "Téléchargement d'Adminer v4.8.1..."
-  curl -fsSL -o "$ADMINER_DIR/adminer.php" \
+  curl -fsSL --retry 3 --retry-delay 2 \
+    -o "$ADMINER_DIR/adminer.php" \
     "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1-pgsql.php" \
     || { warn "Téléchargement Adminer échoué. Relancez après vérification réseau."; }
   log "Adminer téléchargé ✓"
@@ -269,11 +314,10 @@ log "Services démarrés ✓"
 section "Vérifications post-installation"
 CHECKS_OK=true
 
-# Attente initiale
 sleep 3
 
 # PostgreSQL
-if pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -q 2>/dev/null; then
+if pg_isready -h "$DB_HOST" -p "$DB_PORT" -q 2>/dev/null; then
   log "✅ PostgreSQL : actif sur le port $DB_PORT"
 else
   warn "❌ PostgreSQL ne répond pas sur le port $DB_PORT"
@@ -293,7 +337,7 @@ if [ "$BACKEND_UP" = true ]; then
   log "✅ Backend : répond sur le port $PORT"
 else
   warn "❌ Backend ne répond pas sur le port $PORT"
-  warn "   Diagnostiquer : sudo journalctl -u ibar -n 50"
+  warn "   Diagnostiquer : sudo journalctl -u ibar -n 50 --no-pager"
   CHECKS_OK=false
 fi
 
@@ -310,29 +354,29 @@ if [ "$ADMINER_UP" = true ]; then
   log "✅ Adminer : répond sur le port $ADMINER_PORT"
 else
   warn "❌ Adminer ne répond pas sur le port $ADMINER_PORT"
-  warn "   Diagnostiquer : sudo journalctl -u ibar-adminer -n 20"
+  warn "   Diagnostiquer : sudo journalctl -u ibar-adminer -n 20 --no-pager"
   CHECKS_OK=false
 fi
 
 # ── Résumé final ───────────────────────────────────────────────────────────────
 SERVER_IP=$(hostname -I | awk '{print $1}')
 echo ""
-log "╔══════════════════════════════════════════════════╗"
+log "╔══════════════════════════════════════════════════════╗"
 if [ "$CHECKS_OK" = true ]; then
-  log "║  ✅  Installation terminée avec succès !         ║"
+  log "║  ✅  Installation terminée avec succès !             ║"
 else
-  log "║  ⚠️   Installation terminée avec des alertes      ║"
+  log "║  ⚠️   Installation terminée avec des alertes          ║"
 fi
-log "╠══════════════════════════════════════════════════╣"
-log "║                                                  ║"
+log "╠══════════════════════════════════════════════════════╣"
+log ""
 log "  Application : http://$SERVER_IP:$PORT"
 log "  Adminer DB  : http://$SERVER_IP:$ADMINER_PORT"
 log ""
-log "╠══════════════════════════════════════════════════╣"
-log "║  Commandes utiles :                              ║"
-log "║                                                  ║"
-log "║  sudo systemctl status ibar                      ║"
-log "║  sudo systemctl restart ibar                     ║"
-log "║  sudo journalctl -u ibar -f                      ║"
-log "║  sudo journalctl -u ibar-adminer -f              ║"
-log "╚══════════════════════════════════════════════════╝"
+log "╠══════════════════════════════════════════════════════╣"
+log "║  Commandes utiles :                                  ║"
+log ""
+log "  sudo systemctl status ibar"
+log "  sudo systemctl restart ibar"
+log "  sudo journalctl -u ibar -f"
+log "  sudo journalctl -u ibar-adminer -f"
+log "╚══════════════════════════════════════════════════════╝"

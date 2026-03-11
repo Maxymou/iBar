@@ -80,14 +80,18 @@ iBar/
 
 ### Prérequis
 
-- Ubuntu Server 20.04 LTS ou supérieur (ou Debian)
+- **Ubuntu Server 20.04 LTS ou supérieur** (testé sur 24.04.4 LTS) ou Debian
 - Accès `sudo`
-- Connexion internet
+- Connexion internet (téléchargement Node.js, npm, Adminer)
 
 Les dépendances suivantes sont installées automatiquement si absentes :
-- Node.js 20.x (version 18+ requise)
-- PostgreSQL
+- `curl`, `git`, `lsb-release`, `ca-certificates`, `gnupg`
+- `build-essential`, `python3-minimal` (compilation de modules natifs npm)
+- Node.js 20.x via NodeSource (version 18+ requise)
+- PostgreSQL (16.x sur Ubuntu 24.04)
 - PHP CLI + extensions `pgsql` et `mbstring`
+
+**Compatibilité Ubuntu 24.04.4 LTS :** toutes les dépendances sont compatibles. PostgreSQL 16 et PHP 8.3 (versions par défaut) fonctionnent correctement avec l'application.
 
 ### Étape 1 — Cloner le dépôt
 
@@ -113,6 +117,12 @@ JWT_REFRESH_SECRET=<sortie de : openssl rand -hex 32>
 
 > **Important :** le script d'installation valide ces variables et refuse les valeurs placeholder (`changeme`, etc.) ainsi que les secrets JWT inférieurs à 32 caractères. Il s'arrête automatiquement si `.env` vient d'être créé depuis le template.
 
+> **Caractères spéciaux dans les valeurs :** si un mot de passe ou un secret contient `#`, entourez la valeur de guillemets doubles dans `.env` :
+> ```env
+> DB_PASSWORD="mon#mot$de#passe"
+> ```
+> Sans guillemets, tout ce qui suit `#` est interprété comme un commentaire (comportement systemd `EnvironmentFile`).
+
 ### Étape 3 — Lancer l'installation
 
 ```bash
@@ -129,14 +139,37 @@ Le script est **idempotent** (ré-exécutable sans danger). Il effectue dans l'o
 6. Validation du `.env` (variables critiques, placeholders, longueur JWT)
 7. Création de l'utilisateur et de la base PostgreSQL
 8. Application du schéma SQL + attribution des permissions à l'utilisateur app
-9. Installation des dépendances npm (backend `--omit=dev`, frontend)
-10. Compilation du frontend Vite
-11. Création des répertoires runtime (`logs/`, `backend/uploads/`)
-12. Téléchargement d'Adminer v4.8.1
-13. Création et activation des services systemd `ibar` et `ibar-adminer`
-14. Démarrage des services
-15. Vérifications post-installation (PostgreSQL, backend sur `:8000`, Adminer sur `:9000`)
-16. Affichage du résumé avec les URLs
+9. Installation des paquets système (`build-essential`, `python3-minimal`, etc.)
+10. Installation des dépendances npm (backend `--omit=dev`, frontend)
+11. Compilation du frontend Vite + vérification de `dist/index.html`
+12. Création des répertoires runtime (`logs/`, `backend/uploads/`)
+13. Téléchargement d'Adminer v4.8.1 (3 tentatives avec retry)
+14. Création et activation des services systemd `ibar` et `ibar-adminer`
+15. Démarrage des services
+16. Vérifications post-installation (PostgreSQL, backend `/api/health` sur `:8000`, Adminer sur `:9000`)
+17. Affichage du résumé avec les URLs
+
+### Dépannage de l'installation
+
+```bash
+# Voir les logs systemd du backend
+sudo journalctl -u ibar -n 50 --no-pager
+
+# Voir les logs systemd Adminer
+sudo journalctl -u ibar-adminer -n 20 --no-pager
+
+# Vérifier le statut des services
+sudo systemctl status ibar ibar-adminer
+
+# Relancer l'installation (idempotent)
+bash scripts/install.sh
+```
+
+**Pare-feu (UFW) :** si UFW est actif, ouvrez les ports manuellement :
+```bash
+sudo ufw allow 8000/tcp
+sudo ufw allow 9000/tcp
+```
 
 ---
 
