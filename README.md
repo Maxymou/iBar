@@ -140,8 +140,8 @@ Le script est **idempotent** (ré-exécutable sans danger). Il effectue dans l'o
 7. Création de l'utilisateur et de la base PostgreSQL
 8. Application du schéma SQL + attribution des permissions à l'utilisateur app
 9. Installation des paquets système (`build-essential`, `python3-minimal`, etc.)
-10. Installation des dépendances npm (backend `--omit=dev`, frontend)
-11. Compilation du frontend Vite + vérification de `dist/index.html`
+10. Installation des dépendances npm backend (`--omit=dev` — production uniquement)
+11. Installation des dépendances npm frontend (`--include=dev` — outils de build inclus) + compilation Vite + vérification de `dist/index.html`
 12. Création des répertoires runtime (`logs/`, `backend/uploads/`)
 13. Téléchargement d'Adminer v4.8.1 (3 tentatives avec retry)
 14. Création et activation des services systemd `ibar` et `ibar-adminer`

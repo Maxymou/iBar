@@ -204,15 +204,21 @@ sudo -u postgres psql -d "$DB_NAME" \
 log "Base de données : OK ✓"
 
 # ── Dépendances backend ────────────────────────────────────────────────────────
-section "Dépendances backend"
+section "Dépendances backend (production)"
 cd "$PROJECT_DIR/backend"
+# --omit=dev : nodemon et autres outils de développement ne sont pas nécessaires
+# en production.
 npm install --omit=dev --no-audit --no-fund
 log "Dépendances backend installées ✓"
 
 # ── Build frontend ─────────────────────────────────────────────────────────────
-section "Build frontend"
+section "Dépendances frontend + build"
 cd "$PROJECT_DIR/frontend"
-npm install --no-audit --no-fund
+# --include=dev est obligatoire : vite, @vitejs/plugin-react, tailwindcss, etc.
+# sont déclarés en devDependencies. Si NODE_ENV=production est défini dans .env
+# (ce qui est le cas), npm install sans ce flag les ignore → "vite: not found".
+npm install --include=dev --no-audit --no-fund
+log "Dépendances frontend installées ✓"
 npm run build
 
 # Vérification que le build a produit les fichiers attendus
