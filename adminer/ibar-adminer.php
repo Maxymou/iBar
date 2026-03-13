@@ -53,6 +53,7 @@ function adminer_object() {
 
         // Inject custom CSS into <head>
         function head() {
+            parent::head();
             echo '<style>' . file_get_contents(__DIR__ . '/ibar-adminer.css') . '</style>';
         }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './store/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
@@ -6,10 +6,17 @@ import { ToastProvider } from './components/ui/Toast';
 import LoginPage from './components/user/LoginPage';
 import RegisterPage from './components/user/RegisterPage';
 import UserDrawer from './components/user/UserDrawer';
-import RestaurantsPage from './components/restaurants/RestaurantsPage';
-import RestaurantDetail from './components/restaurants/RestaurantDetail';
-import AccommodationsPage from './components/accommodations/AccommodationsPage';
-import AccommodationDetail from './components/accommodations/AccommodationDetail';
+
+const RestaurantsPage    = lazy(() => import('./components/restaurants/RestaurantsPage'));
+const RestaurantDetail   = lazy(() => import('./components/restaurants/RestaurantDetail'));
+const AccommodationsPage = lazy(() => import('./components/accommodations/AccommodationsPage'));
+const AccommodationDetail = lazy(() => import('./components/accommodations/AccommodationDetail'));
+
+const PageSpinner = () => (
+  <div className="flex items-center justify-center h-screen">
+    <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 // Protected layout with header + bottom nav
 const AppLayout = () => {
@@ -61,13 +68,15 @@ const AppLayout = () => {
           marginBottom: isDetailPage ? 0 : `calc(56px + env(safe-area-inset-bottom))`,
         }}
       >
-        <Routes>
-          <Route path="/" element={<Navigate to="/restaurants" replace />} />
-          <Route path="/restaurants" element={<RestaurantsPage />} />
-          <Route path="/restaurants/:id" element={<RestaurantDetail />} />
-          <Route path="/hebergements" element={<AccommodationsPage />} />
-          <Route path="/hebergements/:id" element={<AccommodationDetail />} />
-        </Routes>
+        <Suspense fallback={<PageSpinner />}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/restaurants" replace />} />
+            <Route path="/restaurants" element={<RestaurantsPage />} />
+            <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+            <Route path="/hebergements" element={<AccommodationsPage />} />
+            <Route path="/hebergements/:id" element={<AccommodationDetail />} />
+          </Routes>
+        </Suspense>
       </main>
 
       {/* Bottom Navigation */}
