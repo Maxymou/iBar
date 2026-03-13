@@ -4,7 +4,12 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const path = require('path');
+const fs = require('fs');
 const rateLimit = require('express-rate-limit');
+
+// Ensure required runtime directories exist
+fs.mkdirSync(path.join(__dirname, 'uploads'), { recursive: true });
+fs.mkdirSync(path.join(__dirname, '../logs'), { recursive: true });
 
 const authRoutes = require('./routes/auth');
 const restaurantRoutes = require('./routes/restaurants');
@@ -82,8 +87,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ IBar API démarré sur le port ${PORT}`);
   console.log(`   Frontend: http://0.0.0.0:${PORT}`);
   console.log(`   API:      http://0.0.0.0:${PORT}/api`);
+});
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} already in use. Please stop the existing process.`);
+    process.exit(1);
+  } else {
+    throw error;
+  }
 });

@@ -10,11 +10,13 @@ backend/.env
 frontend/dist/
 frontend/.vite/
 
-# Uploads (user data)
-backend/uploads/
+# Uploads (user data — keep directory via .gitkeep)
+backend/uploads/*
+!backend/uploads/.gitkeep
 
-# Logs
-logs/
+# Logs (keep directory via .gitkeep)
+logs/*
+!logs/.gitkeep
 *.log
 
 # Backups

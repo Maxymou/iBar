@@ -6,14 +6,17 @@ Application mobile-first Progressive Web App (PWA) pour gérer vos restaurants e
 
 - [Stack technique](#stack-technique)
 - [Structure du projet](#structure-du-projet)
+- [Démarrage rapide](#démarrage-rapide)
 - [Installation](#installation)
-- [Configuration .env](#configuration-env)
+- [Configuration](#configuration)
+- [Base de données](#base-de-données)
 - [Accès](#accès)
 - [Services systemd](#services-systemd)
 - [Scripts utilitaires](#scripts-utilitaires)
 - [Démarrage manuel](#démarrage-manuel-sans-systemd)
 - [API](#api)
 - [Fonctionnalités](#fonctionnalités)
+- [Dépannage](#dépannage)
 
 ---
 
@@ -76,20 +79,42 @@ iBar/
 
 ---
 
+## Démarrage rapide
+
+> Pour un environnement Ubuntu/Debian avec accès `sudo`, le script `install.sh` automatise tout.
+> Pour un démarrage manuel (développement local ou autre OS), suivez la section [Installation](#installation).
+
+```bash
+git clone https://github.com/Maxymou/iBar.git
+cd iBar
+cp .env.example .env
+# Éditer .env avec vos valeurs (DB_PASSWORD, JWT_SECRET, JWT_REFRESH_SECRET sont obligatoires)
+npm run install:all
+npm run build
+npm start
+```
+
+---
+
 ## Installation
 
 ### Prérequis
 
-- **Ubuntu Server 20.04 LTS ou supérieur** (testé sur 24.04.4 LTS) ou Debian
-- Accès `sudo`
-- Connexion internet (téléchargement Node.js, npm, Adminer)
+| Outil | Version minimale | Notes |
+|-------|-----------------|-------|
+| **Node.js** | 18 LTS | Recommandé : 20.x LTS |
+| **npm** | 9 | Inclus avec Node.js 18+ |
+| **PostgreSQL** | 14 | Recommandé : 16.x |
+| **Git** | 2.x | Pour cloner le dépôt |
+| **OS** | Ubuntu 20.04+ / Debian 11+ | Pour l'installation via `install.sh` |
 
-Les dépendances suivantes sont installées automatiquement si absentes :
+> **Installation automatisée (Ubuntu/Debian) :** le script `scripts/install.sh` installe
+> Node.js 20.x, PostgreSQL 16 et PHP CLI automatiquement si absents.
+
+Via `install.sh`, les dépendances suivantes sont également installées automatiquement :
 - `curl`, `git`, `lsb-release`, `ca-certificates`, `gnupg`
 - `build-essential`, `python3-minimal` (compilation de modules natifs npm)
-- Node.js 20.x via NodeSource (version 18+ requise)
-- PostgreSQL (16.x sur Ubuntu 24.04)
-- PHP CLI + extensions `pgsql` et `mbstring`
+- PHP CLI + extensions `pgsql` et `mbstring` (pour Adminer)
 
 **Compatibilité Ubuntu 24.04.4 LTS :** toutes les dépendances sont compatibles. PostgreSQL 16 et PHP 8.3 (versions par défaut) fonctionnent correctement avec l'application.
 
@@ -173,7 +198,30 @@ sudo ufw allow 9000/tcp
 
 ---
 
-## Configuration .env
+## Configuration
+
+### Étapes de configuration
+
+1. **Copier le fichier template :**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Remplir les variables obligatoires** (le serveur refusera de démarrer sans elles) :
+   ```bash
+   nano .env  # ou vim, code, etc.
+   ```
+
+3. **Variables obligatoires à modifier :**
+   ```env
+   DB_PASSWORD=votre_mot_de_passe_fort
+   JWT_SECRET=$(openssl rand -hex 32)
+   JWT_REFRESH_SECRET=$(openssl rand -hex 32)
+   ```
+
+4. **Vérifier** que `FRONTEND_URL` correspond à l'URL publique du serveur en production.
+
+### Variables d'environnement
 
 | Variable | Description | Défaut | Obligatoire |
 |----------|-------------|--------|-------------|
@@ -202,6 +250,39 @@ openssl rand -hex 32
 ```
 
 **Note `FRONTEND_URL` :** en production, remplacez `localhost` par l'IP ou le domaine de votre serveur (ex. `http://192.168.1.100:8000`). Cette valeur contrôle la politique CORS du backend.
+
+---
+
+## Base de données
+
+### Création manuelle de la base de données
+
+Si vous n'utilisez pas `scripts/install.sh`, configurez PostgreSQL manuellement :
+
+```bash
+# Se connecter à PostgreSQL en tant que superutilisateur
+sudo -u postgres psql
+
+# Dans le shell psql :
+CREATE USER ibar_user WITH PASSWORD 'votre_mot_de_passe_fort';
+CREATE DATABASE ibar OWNER ibar_user ENCODING 'UTF8';
+GRANT ALL PRIVILEGES ON DATABASE ibar TO ibar_user;
+\q
+```
+
+### Appliquer le schéma SQL
+
+```bash
+sudo -u postgres psql -d ibar -f database/schema.sql
+# Ou avec l'utilisateur applicatif :
+psql -h localhost -U ibar_user -d ibar -f database/schema.sql
+```
+
+### Vérifier la connexion
+
+```bash
+psql -h localhost -U ibar_user -d ibar -c "SELECT version();"
+```
 
 ---
 
@@ -427,3 +508,101 @@ GET /api/health    → { "status": "ok", "uptime": <secondes> }
 ### Export et sauvegarde
 - Export CSV restaurants / hébergements
 - Sauvegarde et restauration complète de la base de données
+
+---
+
+## Dépannage
+
+### Le port est déjà utilisé (`EADDRINUSE`)
+
+```
+Port 8000 already in use. Please stop the existing process.
+```
+
+```bash
+# Trouver le processus utilisant le port 8000
+sudo lsof -i :8000
+# Ou via fuser :
+sudo fuser 8000/tcp
+# Arrêter le service systemd si applicable :
+sudo systemctl stop ibar
+```
+
+### La base de données est inaccessible
+
+```
+Error: connect ECONNREFUSED 127.0.0.1:5432
+```
+
+```bash
+# Vérifier que PostgreSQL est démarré
+sudo systemctl status postgresql
+sudo systemctl start postgresql
+
+# Tester la connexion manuellement
+psql -h localhost -U ibar_user -d ibar
+```
+
+### Le frontend ne s'affiche pas (404 sur `/`)
+
+Le dossier `frontend/dist/` est absent — le build n'a pas été exécuté.
+
+```bash
+cd frontend && npm install && npm run build
+# Ou depuis la racine :
+npm run build
+```
+
+### `npm audit` signale des vulnérabilités
+
+```bash
+# Frontend
+cd frontend && npm audit
+
+# Backend
+cd backend && npm audit
+```
+
+Consultez les sections [mise à jour frontend](#4-vulnérabilités-de-sécurité-dans-le-frontend) et backend pour les versions corrigées.
+
+### Adminer ne répond pas (port 9000)
+
+```bash
+# Vérifier le service
+sudo systemctl status ibar-adminer
+sudo journalctl -u ibar-adminer -n 30 --no-pager
+
+# Vérifier que adminer.php est présent
+ls -la adminer/adminer.php
+
+# Télécharger manuellement si absent
+curl -fsSL -o adminer/adminer.php \
+  "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php"
+
+# Relancer le service
+sudo systemctl restart ibar-adminer
+```
+
+### Erreur JWT (`JsonWebTokenError: invalid signature`)
+
+Les secrets JWT ont changé depuis la dernière session. Les tokens existants sont invalidés — reconnectez-vous.
+
+### Les images ne s'affichent pas
+
+Vérifier que `backend/uploads/` existe et est accessible en écriture :
+
+```bash
+ls -la backend/uploads/
+# Si absent :
+mkdir -p backend/uploads/
+```
+
+### Variables `.env` non prises en compte
+
+Après modification de `.env`, redémarrer le backend :
+
+```bash
+sudo systemctl restart ibar
+# Ou en mode manuel :
+cd backend && npm start
+```

@@ -249,7 +249,7 @@ if [ ! -f "$ADMINER_DIR/adminer.php" ]; then
   log "Téléchargement d'Adminer v4.8.1..."
   curl -fsSL --retry 3 --retry-delay 2 \
     -o "$ADMINER_DIR/adminer.php" \
-    "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1-pgsql.php" \
+    "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php" \
     || { warn "Téléchargement Adminer échoué. Relancez après vérification réseau."; }
   log "Adminer téléchargé ✓"
 else
