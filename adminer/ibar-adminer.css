@@ -1,4 +1,4 @@
-/* ── IBar Adminer — Custom Theme ─────────────────────────────────────────── */
+/* ── IBar Adminer — Desktop Theme ─────────────────────────────────────────── */
 
 :root {
   --blue-50:  #eff6ff;
@@ -17,6 +17,7 @@
   --gray-900: #111827;
   --radius:   10px;
   --shadow:   0 4px 24px rgba(0,0,0,.10);
+  --sidebar:  220px;
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
@@ -29,6 +30,8 @@ body {
   color: var(--gray-700);
   background: var(--gray-50);
   margin: 0;
+  display: flex;
+  min-height: 100vh;
 }
 
 a {
@@ -37,50 +40,85 @@ a {
 }
 a:hover { text-decoration: underline; }
 
-/* ── Header ────────────────────────────────────────────────────────────────── */
+/* ── Sidebar #menu ────────────────────────────────────────────────────────── */
 #menu {
+  width: var(--sidebar);
+  min-width: var(--sidebar);
   background: var(--blue-700);
-  border-bottom: none;
-  padding: 0 16px;
-  min-height: 52px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+  padding: 0;
+  border-bottom: none;
 }
 
 #menu h1 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #fff;
   margin: 0;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.15);
   letter-spacing: -0.3px;
 }
 
-#menu a { color: rgba(255,255,255,.85); }
-#menu a:hover { color: #fff; text-decoration: none; }
+#menu .column {
+  padding: 8px 0;
+}
+
+#menu a,
+#menu span {
+  display: block;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: rgba(255,255,255,.85);
+  margin: 1px 8px;
+  line-height: 1.4;
+}
+
+#menu a:hover {
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  text-decoration: none;
+}
+
+#menu .active {
+  background: rgba(255,255,255,.2);
+  color: #fff;
+  font-weight: 600;
+}
 
 /* Breadcrumb separator */
 #menu .breadcrumb { color: rgba(255,255,255,.5); }
 
-/* ── Login page ────────────────────────────────────────────────────────────── */
+/* ── Main content #content ────────────────────────────────────────────────── */
 #content {
-  max-width: 480px;
-  margin: 48px auto;
-  padding: 0 16px;
+  margin-left: var(--sidebar);
+  padding: 28px 32px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  max-width: none;
 }
 
-/* Login card */
-form[action=""] table,
-form[method="post"] > table {
-  background: #fff;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 24px;
-  border: 1px solid var(--gray-200);
-  width: 100%;
+/* ── Login page — centered form ───────────────────────────────────────────── */
+#content:has(.ibar-login-info) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
 }
 
-/* ── Connection info box ────────────────────────────────────────────────────── */
 .ibar-login-info {
+  max-width: 460px;
+  width: 100%;
   background: var(--blue-50);
   border: 1px solid var(--blue-200);
   border-radius: var(--radius);
@@ -97,6 +135,17 @@ form[method="post"] > table {
   letter-spacing: .5px;
 }
 
+form[method="post"] > table {
+  max-width: 460px;
+  width: 100%;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  border: 1px solid var(--gray-200);
+}
+
+/* ── Connection info table ────────────────────────────────────────────────── */
 .ibar-conn-table {
   border: none !important;
   box-shadow: none !important;
@@ -106,18 +155,16 @@ form[method="post"] > table {
 }
 
 .ibar-conn-table td { padding: 2px 12px 2px 0; font-size: 13px; }
-
 .ibar-conn-label { color: var(--gray-500); white-space: nowrap; }
-
 .ibar-conn-value {
   font-family: "SF Mono", "Fira Code", "Courier New", monospace;
   color: var(--gray-900);
   font-size: 12px;
 }
 
-/* ── Password input ─────────────────────────────────────────────────────────── */
+/* ── Password input ───────────────────────────────────────────────────────── */
 .ibar-password-input {
-  width: 260px;
+  width: 100%;
   padding: 9px 12px;
   border: 1.5px solid var(--gray-200);
   border-radius: 8px;
@@ -131,7 +178,7 @@ form[method="post"] > table {
   box-shadow: 0 0 0 3px var(--blue-100);
 }
 
-/* ── Submit button ──────────────────────────────────────────────────────────── */
+/* ── Submit button ────────────────────────────────────────────────────────── */
 .ibar-submit,
 input[type="submit"] {
   background: var(--blue-700);
@@ -145,15 +192,11 @@ input[type="submit"] {
   transition: background .15s, transform .1s;
 }
 .ibar-submit:hover,
-input[type="submit"]:hover {
-  background: var(--blue-800);
-}
+input[type="submit"]:hover { background: var(--blue-800); }
 .ibar-submit:active,
-input[type="submit"]:active {
-  transform: scale(0.98);
-}
+input[type="submit"]:active { transform: scale(0.98); }
 
-/* ── Form inputs (general) ─────────────────────────────────────────────────── */
+/* ── Form inputs (general) ────────────────────────────────────────────────── */
 input[type="text"],
 input[type="search"],
 input[type="number"],
@@ -175,19 +218,25 @@ input:focus, textarea:focus, select:focus {
   background: #fff;
 }
 
-/* ── Tables ─────────────────────────────────────────────────────────────────── */
+/* ── SQL editor ───────────────────────────────────────────────────────────── */
+#content textarea[name="query"] {
+  width: 100%;
+  min-height: 180px;
+  font-family: "SF Mono", "Fira Code", "Courier New", monospace;
+  font-size: 13px;
+}
+
+/* ── Tables — full width with horizontal scroll ───────────────────────────── */
 table.layout { width: 100%; border-collapse: collapse; }
 
-/* Data tables */
 table.nowrap,
-#content > form table,
 .table-list table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
   border: 1px solid var(--gray-200);
 }
 
@@ -199,7 +248,7 @@ table thead tr {
 
 table.nowrap thead th,
 table thead th {
-  padding: 10px 12px;
+  padding: 10px 14px;
   font-size: 12px;
   font-weight: 600;
   color: var(--gray-500);
@@ -210,55 +259,30 @@ table thead th {
 
 table.nowrap tbody td,
 table tbody td {
-  padding: 9px 12px;
+  padding: 9px 14px;
   border-bottom: 1px solid var(--gray-100);
   font-size: 13px;
   vertical-align: middle;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 table.nowrap tbody tr:last-child td,
-table tbody tr:last-child td {
-  border-bottom: none;
-}
+table tbody tr:last-child td { border-bottom: none; }
 
 table.nowrap tbody tr:hover td,
-table tbody tr:hover td {
-  background: var(--blue-50);
-}
+table tbody tr:hover td { background: var(--blue-50); }
 
-/* Checkboxes in table rows */
 table td input[type="checkbox"] { cursor: pointer; }
 
-/* ── Navigation sidebar ─────────────────────────────────────────────────────── */
-#menu .column {
-  padding: 8px 0;
-}
-
-#menu a, #menu span {
-  display: block;
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-#menu a:hover {
-  background: rgba(255,255,255,.12);
-  text-decoration: none;
-}
-
-#menu .active {
-  background: rgba(255,255,255,.2);
-  font-weight: 600;
-}
-
-/* ── Page titles & sections ──────────────────────────────────────────────────── */
+/* ── Page titles ──────────────────────────────────────────────────────────── */
 h2, h3 {
   color: var(--gray-900);
   font-weight: 700;
 }
 
-/* ── Alerts / messages ──────────────────────────────────────────────────────── */
+/* ── Alerts / messages ────────────────────────────────────────────────────── */
 p.message {
   padding: 10px 14px;
   border-radius: 8px;
@@ -277,10 +301,10 @@ p.error {
   font-size: 13px;
 }
 
-/* ── Pagination ─────────────────────────────────────────────────────────────── */
+/* ── Pagination ───────────────────────────────────────────────────────────── */
 p.links { font-size: 13px; }
 
-/* ── Action buttons in content ──────────────────────────────────────────────── */
+/* ── Action links ─────────────────────────────────────────────────────────── */
 #content .links a,
 p > a.jush-sql {
   display: inline-block;
@@ -299,11 +323,5 @@ p > a.jush-sql {
   text-decoration: none;
 }
 
-/* ── NULL values ──────────────────────────────────────────────────────────────── */
+/* ── NULL values ──────────────────────────────────────────────────────────── */
 td.null { color: var(--gray-400); font-style: italic; }
-
-/* ── Responsive ─────────────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  #content { margin: 16px auto; }
-  .ibar-password-input { width: 100%; }
-}
