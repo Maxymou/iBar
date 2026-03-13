@@ -517,6 +517,19 @@ GET /api/health    → { "status": "ok", "uptime": <secondes> }
 
 ## Dépannage
 
+### Page blanche depuis une IP réseau (CORS)
+
+Si vous accédez à l'application depuis une autre machine (ex : `http://192.168.1.30:8000`)
+et que la console du navigateur affiche des erreurs CORS, ajoutez votre IP dans `.env` :
+
+```env
+FRONTEND_URL=http://localhost:8000,http://192.168.1.30:8000
+```
+
+Puis redémarrez le serveur. Vous pouvez déclarer autant d'origines que nécessaire,
+séparées par des virgules. `http://localhost:8000` et `http://127.0.0.1:8000` sont
+toujours autorisées par défaut.
+
 ### Le port est déjà utilisé (`EADDRINUSE`)
 
 ```
