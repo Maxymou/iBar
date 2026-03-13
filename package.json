@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "IBar PWA - Restaurants & Hébergements",
   "scripts": {
-    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install && cd .. && node scripts/download-adminer.js",
     "build": "cd frontend && npm run build",
     "start": "node scripts/check-adminer.js && npm run build && cd backend && npm start",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
     "setup": "bash scripts/install.sh",
+    "setup:adminer": "node scripts/download-adminer.js",
     "adminer": "bash scripts/start-adminer.sh"
   }
 }

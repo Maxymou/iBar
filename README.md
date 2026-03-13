@@ -81,19 +81,20 @@ iBar/
 
 ## Démarrage rapide
 
-> Pour un environnement Ubuntu/Debian avec accès `sudo`, le script `install.sh` automatise tout.
-> Pour un démarrage manuel (développement local ou autre OS), suivez la section [Installation](#installation).
+> Installation standard **sans sudo**, fonctionne sur tous les OS avec Node.js 18+ déjà installé.
 
 ```bash
 git clone https://github.com/Maxymou/iBar.git
 cd iBar
 cp .env.example .env
 # Éditer .env avec vos valeurs (DB_PASSWORD, JWT_SECRET, JWT_REFRESH_SECRET sont obligatoires)
-npm run setup       # télécharge adminer.php et configure les permissions
-npm run install:all
+npm run install:all  # installe les dépendances npm ET télécharge adminer.php
 npm run build
 npm start
 ```
+
+> **Installation complète sur serveur Ubuntu/Debian (avec sudo)** — installe Node.js, PostgreSQL,
+> PHP et configure systemd automatiquement : voir la section [Installation](#installation).
 
 ---
 
@@ -149,12 +150,21 @@ JWT_REFRESH_SECRET=<sortie de : openssl rand -hex 32>
 > ```
 > Sans guillemets, tout ce qui suit `#` est interprété comme un commentaire (comportement systemd `EnvironmentFile`).
 
-### Étape 3 — Lancer l'installation
+### Étape 3 — Choisir le mode d'installation
 
-> **Important** : si vous n'utilisez pas `install.sh` (installation manuelle), exécutez
-> `npm run setup` avant `npm start`. Cette commande télécharge Adminer (interface
-> d'administration DB) et configure les permissions nécessaires. Elle est requise
-> uniquement à la première installation et lors des mises à jour majeures d'Adminer.
+#### Mode standard (sans sudo) — développement local, CI, tout OS
+
+Ne nécessite pas de droits root. Node.js, PostgreSQL et PHP doivent être déjà installés.
+
+```bash
+npm run install:all   # dépendances npm + téléchargement adminer.php
+npm run build
+npm start
+```
+
+#### Mode serveur complet (avec sudo) — Ubuntu/Debian uniquement
+
+Installe toutes les dépendances système, configure PostgreSQL et crée les services systemd.
 
 ```bash
 bash scripts/install.sh
@@ -411,9 +421,6 @@ Génère dans `exports/` :
 Pour les environnements sans systemd (développement local, CI) :
 
 ```bash
-# À la première installation uniquement — télécharge adminer.php
-npm run setup
-
 # Démarrage manuel (nohup)
 bash scripts/start.sh
 

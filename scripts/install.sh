@@ -18,105 +18,119 @@ log "║     IBar — Script d'installation         ║"
 log "╚══════════════════════════════════════════╝"
 echo ""
 
-# ── Vérification OS ────────────────────────────────────────────────────────────
-section "Vérification de l'environnement"
+# ══════════════════════════════════════════════════════════════════════════════
+# SECTION 1 — Opérations sans sudo (toujours exécutées)
+# ══════════════════════════════════════════════════════════════════════════════
 
-[ -f /etc/os-release ] || err "Impossible de détecter le système d'exploitation."
-. /etc/os-release
-if [[ "$ID" != "ubuntu" && "$ID" != "debian" && "${ID_LIKE:-}" != *"debian"* ]]; then
-  err "Ce script requiert Ubuntu ou Debian. Système détecté : ${PRETTY_NAME:-$ID}"
+section "Répertoires runtime"
+mkdir -p "$PROJECT_DIR/backend/uploads"
+chmod 755 "$PROJECT_DIR/backend/uploads"
+mkdir -p "$PROJECT_DIR/logs"
+log "logs/ et backend/uploads/ créés ✓"
+
+section "Adminer"
+ADMINER_DIR="$PROJECT_DIR/adminer"
+mkdir -p "$ADMINER_DIR"
+if [ ! -f "$ADMINER_DIR/adminer.php" ]; then
+  log "Téléchargement d'Adminer v4.8.1..."
+  curl -fsSL --retry 3 --retry-delay 2 \
+    -o "$ADMINER_DIR/adminer.php" \
+    "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php" \
+    && log "Adminer téléchargé ✓" \
+    || warn "Téléchargement Adminer échoué — vérifiez votre connexion et relancez npm run setup:adminer"
+else
+  log "Adminer déjà présent ✓"
 fi
-log "Système : ${PRETTY_NAME:-$ID} ✓"
-
-# ── Mise à jour initiale des dépôts apt ───────────────────────────────────────
-log "Mise à jour des dépôts apt..."
-sudo apt-get update -qq
-
-# ── Paquets système de base ────────────────────────────────────────────────────
-# curl, git       : outils de base
-# lsb-release     : requis par le script NodeSource
-# ca-certificates : certificats TLS pour les téléchargements
-# gnupg           : vérification des clés GPG pour NodeSource
-# build-essential : compilation de modules natifs Node.js (ex: sharp fallback)
-log "Installation des paquets système de base..."
-sudo apt-get install -y \
-  curl \
-  git \
-  lsb-release \
-  ca-certificates \
-  gnupg \
-  build-essential \
-  python3-minimal
-log "Paquets système : OK ✓"
-
-# ── Node.js ────────────────────────────────────────────────────────────────────
-section "Node.js"
-
-if ! command -v node &>/dev/null; then
-  warn "Node.js non trouvé. Installation de Node.js 20.x via NodeSource..."
-  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-  sudo apt-get install -y nodejs
+if [ ! -f "$ADMINER_DIR/ibar-adminer.php" ]; then
+  warn "ibar-adminer.php introuvable — interface admin non personnalisée"
 fi
 
-# Vérifier que node ET npm sont disponibles
-if ! command -v node &>/dev/null; then
-  err "L'installation de Node.js a échoué.
+# ══════════════════════════════════════════════════════════════════════════════
+# SECTION 2 — Opérations système (nécessitent sudo)
+# ══════════════════════════════════════════════════════════════════════════════
+
+if sudo -n true 2>/dev/null; then
+
+  section "Vérification de l'environnement"
+  [ -f /etc/os-release ] || err "Impossible de détecter le système d'exploitation."
+  . /etc/os-release
+  if [[ "$ID" != "ubuntu" && "$ID" != "debian" && "${ID_LIKE:-}" != *"debian"* ]]; then
+    err "Ce script requiert Ubuntu ou Debian. Système détecté : ${PRETTY_NAME:-$ID}"
+  fi
+  log "Système : ${PRETTY_NAME:-$ID} ✓"
+
+  # ── Mise à jour initiale des dépôts apt ──────────────────────────────────
+  log "Mise à jour des dépôts apt..."
+  sudo apt-get update -qq
+
+  # ── Paquets système de base ──────────────────────────────────────────────
+  log "Installation des paquets système de base..."
+  sudo apt-get install -y \
+    curl \
+    git \
+    lsb-release \
+    ca-certificates \
+    gnupg \
+    build-essential \
+    python3-minimal
+  log "Paquets système : OK ✓"
+
+  # ── Node.js ──────────────────────────────────────────────────────────────
+  section "Node.js"
+  if ! command -v node &>/dev/null; then
+    warn "Node.js non trouvé. Installation de Node.js 20.x via NodeSource..."
+    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+  fi
+  if ! command -v node &>/dev/null; then
+    err "L'installation de Node.js a échoué.
 Vérifiez votre connexion internet et relancez : bash scripts/install.sh"
-fi
-if ! command -v npm &>/dev/null; then
-  warn "npm absent après installation Node.js — tentative d'installation séparée..."
-  sudo apt-get install -y npm || err "Impossible d'installer npm."
-fi
-
-NODE_VER=$(node --version)
-NODE_MAJOR=$(echo "$NODE_VER" | sed 's/v\([0-9]*\).*/\1/')
-if [ "$NODE_MAJOR" -lt 18 ]; then
-  err "Node.js v18+ requis. Détecté : $NODE_VER.
+  fi
+  if ! command -v npm &>/dev/null; then
+    warn "npm absent après installation Node.js — tentative d'installation séparée..."
+    sudo apt-get install -y npm || err "Impossible d'installer npm."
+  fi
+  NODE_VER=$(node --version)
+  NODE_MAJOR=$(echo "$NODE_VER" | sed 's/v\([0-9]*\).*/\1/')
+  if [ "$NODE_MAJOR" -lt 18 ]; then
+    err "Node.js v18+ requis. Détecté : $NODE_VER.
 Supprimez l'ancienne version et relancez : bash scripts/install.sh"
-fi
-NPM_VER=$(npm --version)
-log "Node.js : $NODE_VER  npm : v$NPM_VER ✓"
+  fi
+  NPM_VER=$(npm --version)
+  log "Node.js : $NODE_VER  npm : v$NPM_VER ✓"
 
-# ── PostgreSQL ─────────────────────────────────────────────────────────────────
-section "PostgreSQL"
-
-if ! command -v psql &>/dev/null; then
-  warn "PostgreSQL non trouvé. Installation..."
-  sudo apt-get install -y postgresql postgresql-contrib
-fi
-
-# S'assurer que le service PostgreSQL est actif
-if ! sudo systemctl is-active --quiet postgresql 2>/dev/null; then
-  sudo systemctl start postgresql || err "Impossible de démarrer PostgreSQL.
+  # ── PostgreSQL ───────────────────────────────────────────────────────────
+  section "PostgreSQL"
+  if ! command -v psql &>/dev/null; then
+    warn "PostgreSQL non trouvé. Installation..."
+    sudo apt-get install -y postgresql postgresql-contrib
+  fi
+  if ! sudo systemctl is-active --quiet postgresql 2>/dev/null; then
+    sudo systemctl start postgresql || err "Impossible de démarrer PostgreSQL.
 Diagnostiquer : sudo journalctl -u postgresql -n 30"
-  log "PostgreSQL démarré"
-fi
-sudo systemctl enable postgresql 2>/dev/null || true
+    log "PostgreSQL démarré"
+  fi
+  sudo systemctl enable postgresql 2>/dev/null || true
+  if ! command -v pg_isready &>/dev/null; then
+    sudo apt-get install -y postgresql-client
+  fi
+  log "PostgreSQL : $(psql --version | head -1) ✓"
 
-# S'assurer que pg_isready est disponible (inclus dans postgresql-client)
-if ! command -v pg_isready &>/dev/null; then
-  sudo apt-get install -y postgresql-client
-fi
+  # ── PHP ──────────────────────────────────────────────────────────────────
+  section "PHP (Adminer)"
+  if ! command -v php &>/dev/null; then
+    warn "PHP non trouvé. Installation..."
+    sudo apt-get install -y php-cli php-pgsql php-mbstring
+  fi
+  log "PHP : $(php --version | head -1) ✓"
 
-log "PostgreSQL : $(psql --version | head -1) ✓"
-
-# ── PHP ────────────────────────────────────────────────────────────────────────
-section "PHP (Adminer)"
-
-if ! command -v php &>/dev/null; then
-  warn "PHP non trouvé. Installation..."
-  sudo apt-get install -y php-cli php-pgsql php-mbstring
-fi
-log "PHP : $(php --version | head -1) ✓"
-
-# ── Configuration .env ─────────────────────────────────────────────────────────
-section "Configuration .env"
-
-ENV_FILE="$PROJECT_DIR/.env"
-if [ ! -f "$ENV_FILE" ]; then
-  cp "$PROJECT_DIR/.env.example" "$ENV_FILE"
-  echo ""
-  err "Fichier .env créé depuis .env.example.
+  # ── Configuration .env ───────────────────────────────────────────────────
+  section "Configuration .env"
+  ENV_FILE="$PROJECT_DIR/.env"
+  if [ ! -f "$ENV_FILE" ]; then
+    cp "$PROJECT_DIR/.env.example" "$ENV_FILE"
+    echo ""
+    err "Fichier .env créé depuis .env.example.
 Configurez les variables AVANT de relancer l'installation :
 
   nano $ENV_FILE
@@ -127,145 +141,98 @@ Variables obligatoires :
   JWT_REFRESH_SECRET — même chose
 
   bash scripts/install.sh"
-fi
-
-set -a; source "$ENV_FILE"; set +a
-
-# Validation des variables critiques
-check_var() {
-  local var_name="$1"
-  local var_val="${!var_name:-}"
-  if [ -z "$var_val" ]; then
-    err "Variable $var_name non définie dans .env
-Éditez : nano $ENV_FILE"
   fi
-  if echo "$var_val" | grep -qiE "^(changeme|ibar_password|your_|example|placeholder)"; then
-    err "Variable $var_name contient une valeur placeholder : '$var_val'
+  set -a; source "$ENV_FILE"; set +a
+
+  check_var() {
+    local var_name="$1"
+    local var_val="${!var_name:-}"
+    if [ -z "$var_val" ]; then
+      err "Variable $var_name non définie dans .env
+Éditez : nano $ENV_FILE"
+    fi
+    if echo "$var_val" | grep -qiE "^(changeme|ibar_password|your_|example|placeholder)"; then
+      err "Variable $var_name contient une valeur placeholder : '$var_val'
 Définissez une valeur sécurisée dans $ENV_FILE
 Pour les secrets JWT : openssl rand -hex 32"
+    fi
+  }
+  check_var "DB_PASSWORD"
+  check_var "JWT_SECRET"
+  check_var "JWT_REFRESH_SECRET"
+  if [ "${#JWT_SECRET}" -lt 32 ]; then
+    err "JWT_SECRET trop court (${#JWT_SECRET} chars, minimum 32 requis).
+Générez un secret : openssl rand -hex 32"
   fi
-}
-
-check_var "DB_PASSWORD"
-check_var "JWT_SECRET"
-check_var "JWT_REFRESH_SECRET"
-
-if [ "${#JWT_SECRET}" -lt 32 ]; then
-  err "JWT_SECRET trop court (${#JWT_SECRET} chars, minimum 32 requis).
+  if [ "${#JWT_REFRESH_SECRET}" -lt 32 ]; then
+    err "JWT_REFRESH_SECRET trop court (${#JWT_REFRESH_SECRET} chars, minimum 32 requis).
 Générez un secret : openssl rand -hex 32"
-fi
-if [ "${#JWT_REFRESH_SECRET}" -lt 32 ]; then
-  err "JWT_REFRESH_SECRET trop court (${#JWT_REFRESH_SECRET} chars, minimum 32 requis).
-Générez un secret : openssl rand -hex 32"
-fi
+  fi
+  if echo "${DB_PASSWORD:-}" | grep -q '#'; then
+    warn "DB_PASSWORD contient '#' — dans .env, entourez la valeur de guillemets :"
+    warn "  DB_PASSWORD=\"votre#motdepasse\""
+  fi
+  DB_NAME="${DB_NAME:-ibar}"
+  DB_USER="${DB_USER:-ibar_user}"
+  DB_HOST="${DB_HOST:-localhost}"
+  DB_PORT="${DB_PORT:-5432}"
+  PORT="${PORT:-8000}"
+  ADMINER_PORT="${ADMINER_PORT:-9000}"
+  log "Configuration .env : OK ✓"
 
-# Avertissement pour les caractères spéciaux dans .env (EnvironmentFile systemd)
-if echo "${DB_PASSWORD:-}" | grep -q '#'; then
-  warn "DB_PASSWORD contient '#' — dans .env, entourez la valeur de guillemets :"
-  warn "  DB_PASSWORD=\"votre#motdepasse\""
-fi
+  # ── Base de données PostgreSQL ───────────────────────────────────────────
+  section "Base de données PostgreSQL"
+  log "Création de l'utilisateur PostgreSQL '$DB_USER'..."
+  sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';" 2>/dev/null || \
+    sudo -u postgres psql -c "ALTER USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
+  log "Création de la base de données '$DB_NAME'..."
+  sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;" 2>/dev/null || \
+    warn "Base de données '$DB_NAME' déjà existante — conservée"
+  sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
+  log "Application du schéma SQL..."
+  sudo -u postgres psql -d "$DB_NAME" -f "$PROJECT_DIR/database/schema.sql"
+  log "Attribution des permissions à '$DB_USER'..."
+  sudo -u postgres psql -d "$DB_NAME" \
+    -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;"
+  sudo -u postgres psql -d "$DB_NAME" \
+    -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;"
+  sudo -u postgres psql -d "$DB_NAME" \
+    -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO $DB_USER;"
+  sudo -u postgres psql -d "$DB_NAME" \
+    -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO $DB_USER;"
+  log "Base de données : OK ✓"
 
-# Valeurs par défaut pour les variables optionnelles
-DB_NAME="${DB_NAME:-ibar}"
-DB_USER="${DB_USER:-ibar_user}"
-DB_HOST="${DB_HOST:-localhost}"
-DB_PORT="${DB_PORT:-5432}"
-PORT="${PORT:-8000}"
-ADMINER_PORT="${ADMINER_PORT:-9000}"
+  # ── Dépendances npm + build ──────────────────────────────────────────────
+  section "Dépendances backend (production)"
+  cd "$PROJECT_DIR/backend"
+  npm install --omit=dev --no-audit --no-fund
+  log "Dépendances backend installées ✓"
 
-log "Configuration .env : OK ✓"
-
-# ── Base de données PostgreSQL ─────────────────────────────────────────────────
-section "Base de données PostgreSQL"
-
-log "Création de l'utilisateur PostgreSQL '$DB_USER'..."
-sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';" 2>/dev/null || \
-  sudo -u postgres psql -c "ALTER USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
-
-log "Création de la base de données '$DB_NAME'..."
-sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;" 2>/dev/null || \
-  warn "Base de données '$DB_NAME' déjà existante — conservée"
-
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
-
-log "Application du schéma SQL..."
-sudo -u postgres psql -d "$DB_NAME" -f "$PROJECT_DIR/database/schema.sql"
-
-log "Attribution des permissions à '$DB_USER'..."
-sudo -u postgres psql -d "$DB_NAME" \
-  -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;"
-sudo -u postgres psql -d "$DB_NAME" \
-  -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;"
-sudo -u postgres psql -d "$DB_NAME" \
-  -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO $DB_USER;"
-sudo -u postgres psql -d "$DB_NAME" \
-  -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO $DB_USER;"
-
-log "Base de données : OK ✓"
-
-# ── Dépendances backend ────────────────────────────────────────────────────────
-section "Dépendances backend (production)"
-cd "$PROJECT_DIR/backend"
-# --omit=dev : nodemon et autres outils de développement ne sont pas nécessaires
-# en production.
-npm install --omit=dev --no-audit --no-fund
-log "Dépendances backend installées ✓"
-
-# ── Build frontend ─────────────────────────────────────────────────────────────
-section "Dépendances frontend + build"
-cd "$PROJECT_DIR/frontend"
-# --include=dev est obligatoire : vite, @vitejs/plugin-react, tailwindcss, etc.
-# sont déclarés en devDependencies. Si NODE_ENV=production est défini dans .env
-# (ce qui est le cas), npm install sans ce flag les ignore → "vite: not found".
-npm install --include=dev --no-audit --no-fund
-log "Dépendances frontend installées ✓"
-npm run build
-
-# Vérification que le build a produit les fichiers attendus
-if [ ! -f "$PROJECT_DIR/frontend/dist/index.html" ]; then
-  err "Le build frontend a échoué : frontend/dist/index.html introuvable.
+  section "Dépendances frontend + build"
+  cd "$PROJECT_DIR/frontend"
+  npm install --include=dev --no-audit --no-fund
+  log "Dépendances frontend installées ✓"
+  npm run build
+  if [ ! -f "$PROJECT_DIR/frontend/dist/index.html" ]; then
+    err "Le build frontend a échoué : frontend/dist/index.html introuvable.
 Relancez manuellement pour voir l'erreur :
   cd frontend && npm run build"
-fi
-log "Frontend compilé ✓ (dist/index.html présent)"
+  fi
+  log "Frontend compilé ✓ (dist/index.html présent)"
 
-# ── Répertoires runtime ────────────────────────────────────────────────────────
-mkdir -p "$PROJECT_DIR/backend/uploads"
-chmod 755 "$PROJECT_DIR/backend/uploads"
-mkdir -p "$PROJECT_DIR/logs"
-if [ "$CURRENT_USER" != "root" ]; then
-  chown -R "$CURRENT_USER:$CURRENT_USER" \
-    "$PROJECT_DIR/logs" \
-    "$PROJECT_DIR/backend/uploads" 2>/dev/null || true
-fi
-log "Répertoires runtime (logs/, backend/uploads/) créés ✓"
+  # Ajuster les permissions des répertoires runtime
+  if [ "$CURRENT_USER" != "root" ]; then
+    chown -R "$CURRENT_USER:$CURRENT_USER" \
+      "$PROJECT_DIR/logs" \
+      "$PROJECT_DIR/backend/uploads" 2>/dev/null || true
+  fi
 
-# ── Adminer ────────────────────────────────────────────────────────────────────
-section "Adminer"
+  # ── Services systemd ─────────────────────────────────────────────────────
+  section "Services systemd"
+  NODE_BIN="$(which node)"
+  PHP_BIN="$(which php)"
 
-ADMINER_DIR="$PROJECT_DIR/adminer"
-mkdir -p "$ADMINER_DIR"
-if [ ! -f "$ADMINER_DIR/adminer.php" ]; then
-  log "Téléchargement d'Adminer v4.8.1..."
-  curl -fsSL --retry 3 --retry-delay 2 \
-    -o "$ADMINER_DIR/adminer.php" \
-    "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php" \
-    || { warn "Téléchargement Adminer échoué. Relancez après vérification réseau."; }
-  log "Adminer téléchargé ✓"
-else
-  log "Adminer déjà présent ✓"
-fi
-if [ ! -f "$ADMINER_DIR/ibar-adminer.php" ]; then
-  warn "ibar-adminer.php introuvable — interface admin non personnalisée"
-fi
-
-# ── Services systemd ───────────────────────────────────────────────────────────
-section "Services systemd"
-
-NODE_BIN="$(which node)"
-PHP_BIN="$(which php)"
-
-sudo tee /etc/systemd/system/ibar.service > /dev/null <<EOF
+  sudo tee /etc/systemd/system/ibar.service > /dev/null <<EOF
 [Unit]
 Description=IBar — Backend API & Frontend
 After=network.target postgresql.service
@@ -286,7 +253,7 @@ StandardError=append:$PROJECT_DIR/logs/backend.log
 WantedBy=multi-user.target
 EOF
 
-sudo tee /etc/systemd/system/ibar-adminer.service > /dev/null <<EOF
+  sudo tee /etc/systemd/system/ibar-adminer.service > /dev/null <<EOF
 [Unit]
 Description=IBar Adminer — Interface d'administration DB
 After=network.target
@@ -306,83 +273,105 @@ StandardError=append:$PROJECT_DIR/logs/adminer.log
 WantedBy=multi-user.target
 EOF
 
-sudo systemctl daemon-reload
-sudo systemctl enable ibar ibar-adminer
-log "Services systemd créés et activés au démarrage ✓"
+  sudo systemctl daemon-reload
+  sudo systemctl enable ibar ibar-adminer
+  log "Services systemd créés et activés au démarrage ✓"
 
-# ── Démarrage des services ─────────────────────────────────────────────────────
-section "Démarrage des services"
-sudo systemctl restart ibar
-sudo systemctl restart ibar-adminer
-log "Services démarrés ✓"
+  # ── Démarrage des services ───────────────────────────────────────────────
+  section "Démarrage des services"
+  sudo systemctl restart ibar
+  sudo systemctl restart ibar-adminer
+  log "Services démarrés ✓"
 
-# ── Vérifications post-installation ───────────────────────────────────────────
-section "Vérifications post-installation"
-CHECKS_OK=true
+  # ── Vérifications post-installation ─────────────────────────────────────
+  section "Vérifications post-installation"
+  CHECKS_OK=true
+  sleep 3
 
-sleep 3
-
-# PostgreSQL
-if pg_isready -h "$DB_HOST" -p "$DB_PORT" -q 2>/dev/null; then
-  log "✅ PostgreSQL : actif sur le port $DB_PORT"
-else
-  warn "❌ PostgreSQL ne répond pas sur le port $DB_PORT"
-  CHECKS_OK=false
-fi
-
-# Backend (tentatives sur 30 secondes)
-BACKEND_UP=false
-for i in $(seq 1 6); do
-  if curl -sf "http://localhost:$PORT/api/health" -o /dev/null 2>/dev/null; then
-    BACKEND_UP=true
-    break
+  if pg_isready -h "$DB_HOST" -p "$DB_PORT" -q 2>/dev/null; then
+    log "✅ PostgreSQL : actif sur le port $DB_PORT"
+  else
+    warn "❌ PostgreSQL ne répond pas sur le port $DB_PORT"
+    CHECKS_OK=false
   fi
-  sleep 5
-done
-if [ "$BACKEND_UP" = true ]; then
-  log "✅ Backend : répond sur le port $PORT"
-else
-  warn "❌ Backend ne répond pas sur le port $PORT"
-  warn "   Diagnostiquer : sudo journalctl -u ibar -n 50 --no-pager"
-  CHECKS_OK=false
-fi
 
-# Adminer (tentatives sur 15 secondes)
-ADMINER_UP=false
-for i in $(seq 1 3); do
-  if curl -sf "http://localhost:$ADMINER_PORT/" -o /dev/null 2>/dev/null; then
-    ADMINER_UP=true
-    break
+  BACKEND_UP=false
+  for i in $(seq 1 6); do
+    if curl -sf "http://localhost:$PORT/api/health" -o /dev/null 2>/dev/null; then
+      BACKEND_UP=true; break
+    fi
+    sleep 5
+  done
+  if [ "$BACKEND_UP" = true ]; then
+    log "✅ Backend : répond sur le port $PORT"
+  else
+    warn "❌ Backend ne répond pas sur le port $PORT"
+    warn "   Diagnostiquer : sudo journalctl -u ibar -n 50 --no-pager"
+    CHECKS_OK=false
   fi
-  sleep 5
-done
-if [ "$ADMINER_UP" = true ]; then
-  log "✅ Adminer : répond sur le port $ADMINER_PORT"
-else
-  warn "❌ Adminer ne répond pas sur le port $ADMINER_PORT"
-  warn "   Diagnostiquer : sudo journalctl -u ibar-adminer -n 20 --no-pager"
-  CHECKS_OK=false
-fi
 
-# ── Résumé final ───────────────────────────────────────────────────────────────
-SERVER_IP=$(hostname -I | awk '{print $1}')
-echo ""
-log "╔══════════════════════════════════════════════════════╗"
-if [ "$CHECKS_OK" = true ]; then
-  log "║  ✅  Installation terminée avec succès !             ║"
+  ADMINER_UP=false
+  for i in $(seq 1 3); do
+    if curl -sf "http://localhost:$ADMINER_PORT/" -o /dev/null 2>/dev/null; then
+      ADMINER_UP=true; break
+    fi
+    sleep 5
+  done
+  if [ "$ADMINER_UP" = true ]; then
+    log "✅ Adminer : répond sur le port $ADMINER_PORT"
+  else
+    warn "❌ Adminer ne répond pas sur le port $ADMINER_PORT"
+    warn "   Diagnostiquer : sudo journalctl -u ibar-adminer -n 20 --no-pager"
+    CHECKS_OK=false
+  fi
+
+  # ── Résumé final ─────────────────────────────────────────────────────────
+  SERVER_IP=$(hostname -I | awk '{print $1}')
+  echo ""
+  log "╔══════════════════════════════════════════════════════╗"
+  if [ "$CHECKS_OK" = true ]; then
+    log "║  ✅  Installation terminée avec succès !             ║"
+  else
+    log "║  ⚠️   Installation terminée avec des alertes          ║"
+  fi
+  log "╠══════════════════════════════════════════════════════╣"
+  log ""
+  log "  Application : http://$SERVER_IP:${PORT:-8000}"
+  log "  Adminer DB  : http://$SERVER_IP:${ADMINER_PORT:-9000}"
+  log ""
+  log "╠══════════════════════════════════════════════════════╣"
+  log "║  Commandes utiles :                                  ║"
+  log ""
+  log "  sudo systemctl status ibar"
+  log "  sudo systemctl restart ibar"
+  log "  sudo journalctl -u ibar -f"
+  log "  sudo journalctl -u ibar-adminer -f"
+  log "╚══════════════════════════════════════════════════════╝"
+
 else
-  log "║  ⚠️   Installation terminée avec des alertes          ║"
+  # ── Pas de sudo : avertissement + npm install/build si node disponible ───
+  echo ""
+  warn "sudo non disponible — opérations système ignorées."
+  warn "Les dépendances système (Node.js, PostgreSQL, PHP) doivent être"
+  warn "installées manuellement avant de lancer npm start."
+  echo ""
+
+  if command -v npm &>/dev/null; then
+    section "Dépendances npm (mode sans sudo)"
+    cd "$PROJECT_DIR/backend" && npm install --no-audit --no-fund
+    log "Dépendances backend installées ✓"
+    cd "$PROJECT_DIR/frontend" && npm install --no-audit --no-fund
+    log "Dépendances frontend installées ✓"
+  else
+    warn "npm non trouvé — installez Node.js 18+ manuellement puis relancez."
+  fi
+
+  echo ""
+  log "Étapes suivantes :"
+  log "  1. Configurez .env (cp .env.example .env)"
+  log "  2. npm run build"
+  log "  3. npm start"
+  log ""
+  log "Pour une installation complète (avec systemd) :"
+  log "  sudo bash scripts/install.sh"
 fi
-log "╠══════════════════════════════════════════════════════╣"
-log ""
-log "  Application : http://$SERVER_IP:$PORT"
-log "  Adminer DB  : http://$SERVER_IP:$ADMINER_PORT"
-log ""
-log "╠══════════════════════════════════════════════════════╣"
-log "║  Commandes utiles :                                  ║"
-log ""
-log "  sudo systemctl status ibar"
-log "  sudo systemctl restart ibar"
-log "  sudo journalctl -u ibar -f"
-log "  sudo journalctl -u ibar-adminer -f"
-log "╚══════════════════════════════════════════════════════╝"
