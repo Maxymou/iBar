@@ -49,15 +49,22 @@ const accommodationIcon = new L.Icon({
   popupAnchor: [0, -48],
 });
 
-const RecenterMap = ({ center }) => {
+// Only recenters when recenterTrigger changes (explicit user request), not on every location update
+const RecenterMap = ({ center, trigger }) => {
   const map = useMap();
+  const prevTrigger = useRef(trigger);
+
   useEffect(() => {
-    if (center) map.setView(center, map.getZoom());
-  }, [center, map]);
+    if (trigger !== prevTrigger.current && center) {
+      map.setView(center, 15, { animate: true });
+      prevTrigger.current = trigger;
+    }
+  }, [trigger, center, map]);
+
   return null;
 };
 
-const MapView = ({ items, userLocation, type, onView }) => {
+const MapView = ({ items, userLocation, type, onView, recenterTrigger }) => {
   const defaultCenter = userLocation
     ? [userLocation.lat, userLocation.lng]
     : [48.8566, 2.3522]; // Paris
@@ -104,7 +111,12 @@ const MapView = ({ items, userLocation, type, onView }) => {
         </Marker>
       ))}
 
-      {userLocation && <RecenterMap center={[userLocation.lat, userLocation.lng]} />}
+      {userLocation && (
+        <RecenterMap
+          center={[userLocation.lat, userLocation.lng]}
+          trigger={recenterTrigger}
+        />
+      )}
     </MapContainer>
   );
 };

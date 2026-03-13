@@ -10,6 +10,7 @@ const RestaurantForm = ({ isOpen, onClose, restaurant, onSaved }) => {
   const [loading, setLoading] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState('');
+  const [deletePhoto, setDeletePhoto] = useState(false);
   const [form, setForm] = useState({
     name: '', phone: '', address: '', bar: false,
     cuisine_type: '', rating: 0, comment: '', visit_date: '',
@@ -31,18 +32,26 @@ const RestaurantForm = ({ isOpen, onClose, restaurant, onSaved }) => {
         longitude: restaurant.longitude || '',
       });
       setPreview(restaurant.photo_url || '');
+      setDeletePhoto(false);
     } else {
       setForm({ name: '', phone: '', address: '', bar: false, cuisine_type: '',
                 rating: 0, comment: '', visit_date: '', latitude: '', longitude: '' });
       setPreview('');
       setPhoto(null);
+      setDeletePhoto(false);
     }
   }, [restaurant, isOpen]);
 
   const handlePhotoChange = (file) => {
-    setPhoto(file);
-    if (file) setPreview(URL.createObjectURL(file));
-    else setPreview(restaurant?.photo_url || '');
+    if (file) {
+      setPhoto(file);
+      setPreview(URL.createObjectURL(file));
+      setDeletePhoto(false);
+    } else {
+      setPhoto(null);
+      setPreview('');
+      setDeletePhoto(true);
+    }
   };
 
   const handleGeolocate = () => {
@@ -70,6 +79,7 @@ const RestaurantForm = ({ isOpen, onClose, restaurant, onSaved }) => {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => { if (v !== '' && v !== null) fd.append(k, v); });
       if (photo) fd.append('photo', photo);
+      if (deletePhoto && restaurant) fd.append('remove_photo', 'true');
 
       let res;
       if (restaurant) {

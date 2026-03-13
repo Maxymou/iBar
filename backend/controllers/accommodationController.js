@@ -141,6 +141,9 @@ const update = async (req, res) => {
       await compressImage(req.file.path);
       if (photo_url) deleteImage(path.basename(photo_url));
       photo_url = `/uploads/${req.file.filename}`;
+    } else if (req.body.remove_photo === 'true') {
+      if (photo_url) deleteImage(path.basename(photo_url));
+      photo_url = null;
     }
 
     const result = await db.query(`

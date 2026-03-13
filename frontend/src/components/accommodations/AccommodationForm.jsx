@@ -22,6 +22,7 @@ const AccommodationForm = ({ isOpen, onClose, accommodation, onSaved }) => {
   const [loading, setLoading] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState('');
+  const [deletePhoto, setDeletePhoto] = useState(false);
   const [form, setForm] = useState({
     name: '', phone: '', address: '', comment: '', price: '',
     number_of_rooms: '', wifi: false, parking: false, rating: 0,
@@ -45,19 +46,27 @@ const AccommodationForm = ({ isOpen, onClose, accommodation, onSaved }) => {
         longitude: accommodation.longitude || '',
       });
       setPreview(accommodation.photo_url || '');
+      setDeletePhoto(false);
     } else {
       setForm({ name: '', phone: '', address: '', comment: '', price: '',
                 number_of_rooms: '', wifi: false, parking: false, rating: 0,
                 visit_date: '', latitude: '', longitude: '' });
       setPreview('');
       setPhoto(null);
+      setDeletePhoto(false);
     }
   }, [accommodation, isOpen]);
 
   const handlePhotoChange = (file) => {
-    setPhoto(file);
-    if (file) setPreview(URL.createObjectURL(file));
-    else setPreview(accommodation?.photo_url || '');
+    if (file) {
+      setPhoto(file);
+      setPreview(URL.createObjectURL(file));
+      setDeletePhoto(false);
+    } else {
+      setPhoto(null);
+      setPreview('');
+      setDeletePhoto(true);
+    }
   };
 
   const handleGeolocate = () => {
@@ -79,6 +88,7 @@ const AccommodationForm = ({ isOpen, onClose, accommodation, onSaved }) => {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => { if (v !== '' && v !== null) fd.append(k, v); });
       if (photo) fd.append('photo', photo);
+      if (deletePhoto && accommodation) fd.append('remove_photo', 'true');
 
       const res = accommodation
         ? await api.put(`/accommodations/${accommodation.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })

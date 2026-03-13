@@ -59,35 +59,38 @@ const RestaurantDetail = () => {
   const navLinks = openNavigation(restaurant.address, restaurant.latitude, restaurant.longitude);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="fixed inset-0 flex flex-col bg-gray-50">
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100"
            style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex items-center justify-between px-4 h-14">
           <button onClick={() => navigate(-1)}
-                  className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700">
+                  aria-label="Retour"
+                  className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 text-xl">
             ‹
           </button>
           <h1 className="font-semibold text-gray-900 truncate mx-4">{restaurant.name}</h1>
           <div className="flex gap-2">
             <button onClick={() => setEditOpen(true)}
-                    className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 text-sm">
+                    aria-label="Modifier"
+                    className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 text-sm">
               ✏️
             </button>
             <button onClick={() => setDeleteOpen(true)}
-                    className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center text-red-500 text-sm">
+                    aria-label="Supprimer"
+                    className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 text-sm">
               🗑️
             </button>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="pt-14 pb-8 overflow-y-auto"
-           style={{ paddingTop: `calc(56px + env(safe-area-inset-top))` }}>
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto"
+           style={{ paddingTop: `calc(56px + env(safe-area-inset-top))`, WebkitOverflowScrolling: 'touch' }}>
 
         {/* Photo */}
-        <div className="w-full h-56 bg-gray-100 overflow-hidden">
+        <div className="w-full h-56 bg-gray-100 overflow-hidden flex-shrink-0">
           {restaurant.photo_url ? (
             <img src={restaurant.photo_url} alt={restaurant.name} className="w-full h-full object-cover" />
           ) : (
@@ -95,7 +98,7 @@ const RestaurantDetail = () => {
           )}
         </div>
 
-        <div className="px-4 py-5 space-y-4">
+        <div className="px-4 py-5 space-y-4" style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' }}>
           {/* Name + badges */}
           <div>
             <div className="flex items-start justify-between gap-2 mb-1">
@@ -165,7 +168,7 @@ const RestaurantDetail = () => {
             )}
           </div>
         </div>
-      </div>
+      </div>  {/* end scrollable content */}
 
       {/* Call confirmation */}
       <Modal isOpen={callOpen} onClose={() => setCallOpen(false)} title="Appeler"
