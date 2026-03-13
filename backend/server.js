@@ -7,6 +7,28 @@ const path = require('path');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 
+// Validate required env vars and detect placeholder values
+const REQUIRED_VARS = ['JWT_SECRET', 'JWT_REFRESH_SECRET', 'DB_PASSWORD'];
+const missing = REQUIRED_VARS.filter(k => !process.env[k]);
+if (missing.length > 0) {
+  console.error(`ERREUR : variables d'environnement manquantes : ${missing.join(', ')}`);
+  console.error('Copiez .env.example vers .env et renseignez les valeurs.');
+  process.exit(1);
+}
+const PLACEHOLDER_PATTERN = /^changeme/i;
+const SENSITIVE_VARS = ['JWT_SECRET', 'JWT_REFRESH_SECRET', 'DB_PASSWORD'];
+const placeholders = SENSITIVE_VARS.filter(
+  k => process.env[k] && PLACEHOLDER_PATTERN.test(process.env[k])
+);
+if (placeholders.length > 0 && process.env.NODE_ENV === 'production') {
+  console.error(`ERREUR : variables avec valeurs par défaut non modifiées : ${placeholders.join(', ')}`);
+  console.error('Éditez votre fichier .env avec de vraies valeurs sécurisées.');
+  process.exit(1);
+} else if (placeholders.length > 0) {
+  console.warn(`AVERTISSEMENT : ${placeholders.join(', ')} utilisent des valeurs par défaut.`);
+  console.warn('Ne pas utiliser en production.');
+}
+
 // Ensure required runtime directories exist
 fs.mkdirSync(path.join(__dirname, 'uploads'), { recursive: true });
 fs.mkdirSync(path.join(__dirname, '../logs'), { recursive: true });
