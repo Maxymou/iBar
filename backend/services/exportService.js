@@ -1,5 +1,5 @@
 const db = require('../models/db');
-const { Parser } = require('json2csv');
+const { Parser } = require('@json2csv/plainjs');
 
 const exportRestaurants = async () => {
   const result = await db.query(`
