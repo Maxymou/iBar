@@ -89,6 +89,7 @@ git clone https://github.com/Maxymou/iBar.git
 cd iBar
 cp .env.example .env
 # Éditer .env avec vos valeurs (DB_PASSWORD, JWT_SECRET, JWT_REFRESH_SECRET sont obligatoires)
+npm run setup       # télécharge adminer.php et configure les permissions
 npm run install:all
 npm run build
 npm start
