@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -46,6 +46,7 @@ const PORT = process.env.PORT || 8000;
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false,
 }));
 app.use(compression());
 
@@ -112,9 +113,10 @@ app.get('/api/health', (req, res) => {
 // Serve frontend in production
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
-    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+    return res.status(404).json({ error: 'Route non trouvée' });
   }
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 // Error handler
