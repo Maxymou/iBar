@@ -406,6 +406,9 @@ Génère dans `exports/` :
 Pour les environnements sans systemd (développement local, CI) :
 
 ```bash
+# À la première installation uniquement — télécharge adminer.php
+npm run setup
+
 # Démarrage manuel (nohup)
 bash scripts/start.sh
 
