@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '../../store/AuthContext';
+import { useTheme } from '../../store/ThemeContext';
 import { useToast } from '../ui/Toast';
 import Modal from '../ui/Modal';
 import api from '../../services/api';
@@ -7,6 +8,7 @@ import { formatDate } from '../../utils/navigation';
 
 const UserDrawer = ({ isOpen, onClose }) => {
   const { user, logout, updateUser } = useAuth();
+  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [editOpen, setEditOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
@@ -75,7 +77,7 @@ const UserDrawer = ({ isOpen, onClose }) => {
           <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
 
           {/* Drawer */}
-          <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-ios-lg
+          <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white dark:bg-gray-900 shadow-ios-lg
                           animate-slide-in-left flex flex-col"
                style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
@@ -112,7 +114,27 @@ const UserDrawer = ({ isOpen, onClose }) => {
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               <DrawerItem icon="✏️" label="Modifier le profil" onClick={openEdit} />
               <DrawerItem icon="🔑" label="Changer le mot de passe" onClick={() => { setPwOpen(true); onClose(); }} />
-              <div className="border-t border-gray-100 my-2" />
+
+              {/* Theme selector */}
+              <div className="border-t border-gray-100 dark:border-gray-700 my-2" />
+              <div className="px-4 py-2">
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
+                  Apparence
+                </p>
+                <div className="flex gap-2">
+                  {[['light', '☀️', 'Clair'], ['auto', '🔄', 'Auto'], ['dark', '🌙', 'Sombre']].map(([val, icon, label]) => (
+                    <button key={val} onClick={() => setTheme(val)}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors
+                              ${theme === val
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
+                      {icon} {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 dark:border-gray-700 my-2" />
               <DrawerItem icon="🚪" label="Se déconnecter" onClick={logout} danger />
             </div>
           </div>
@@ -129,7 +151,7 @@ const UserDrawer = ({ isOpen, onClose }) => {
              }>
         <form onSubmit={handleEditSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Photo de profil</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Photo de profil</label>
             <input ref={avatarRef} type="file" accept="image/*" className="hidden"
                    onChange={e => setForm(p => ({ ...p, avatar: e.target.files[0] }))} />
             <button type="button" onClick={() => avatarRef.current.click()}
@@ -138,12 +160,12 @@ const UserDrawer = ({ isOpen, onClose }) => {
             </button>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Nom</label>
             <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
                    className="ios-input" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Email</label>
             <input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
                    className="ios-input" />
           </div>
@@ -180,8 +202,8 @@ const UserDrawer = ({ isOpen, onClose }) => {
 const DrawerItem = ({ icon, label, onClick, danger }) => (
   <button onClick={onClick}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left
-                      transition-colors active:bg-gray-50
-                      ${danger ? 'text-red-500' : 'text-gray-700'}`}>
+                      transition-colors active:bg-gray-50 dark:active:bg-gray-800
+                      ${danger ? 'text-red-500' : 'text-gray-700 dark:text-gray-200'}`}>
     <span className="text-xl">{icon}</span>
     <span className="font-medium">{label}</span>
   </button>

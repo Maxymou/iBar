@@ -89,7 +89,7 @@ const AccommodationsPage = () => {
   return (
     <div className="h-full flex flex-col">
       {/* Sub-header */}
-      <div className="px-4 pt-3 pb-2 space-y-2 bg-white border-b border-gray-100">
+      <div className="px-4 pt-3 pb-2 space-y-2 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
         <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un hébergement..." />
         <SortToggle sort={sort} onChange={setSort} onLocationSort={() => { if (!location) getLocation(); }} />
       </div>
@@ -103,7 +103,7 @@ const AccommodationsPage = () => {
                 <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+              <div className="flex flex-col items-center justify-center h-40 text-gray-400 dark:text-gray-500">
                 <span className="text-5xl mb-3">🏨</span>
                 <p className="text-sm">{search ? 'Aucun résultat' : 'Aucun hébergement'}</p>
               </div>
@@ -130,7 +130,7 @@ const AccommodationsPage = () => {
       <button
         onClick={() => setView(v => v === 'list' ? 'map' : 'list')}
         className="fixed left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2
-                   bg-gray-900 text-white text-sm font-medium rounded-full shadow-ios
+                   bg-gray-900 dark:bg-gray-700 text-white text-sm font-medium rounded-full shadow-ios
                    active:scale-95 transition-transform"
         style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
       >
@@ -141,7 +141,7 @@ const AccommodationsPage = () => {
       <button
         onClick={handleRecenterGps}
         aria-label="Recentrer sur ma position"
-        className="fixed right-4 z-40 w-12 h-12 rounded-full bg-white border border-gray-200
+        className="fixed right-4 z-40 w-12 h-12 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600
                    shadow-ios flex items-center justify-center text-xl
                    active:scale-95 transition-transform"
         style={{ bottom: 'calc(9rem + env(safe-area-inset-bottom))' }}

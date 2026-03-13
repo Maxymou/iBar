@@ -36,12 +36,12 @@ const LoginPage = () => {
       </div>
 
       {/* Form card */}
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-ios-lg p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Connexion</h2>
+      <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-3xl shadow-ios-lg p-6">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Connexion</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Email</label>
             <input
               type="email"
               value={email}
@@ -54,7 +54,7 @@ const LoginPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Mot de passe</label>
             <input
               type="password"
               value={password}
@@ -75,7 +75,7 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-5">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-5">
           Pas encore de compte ?{' '}
           <Link to="/register" className="text-primary-600 font-medium">S'inscrire</Link>
         </p>

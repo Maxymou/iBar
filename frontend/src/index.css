@@ -136,3 +136,24 @@ body {
 .badge {
   @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
 }
+
+/* Dark mode overrides for custom classes */
+.dark .ios-card {
+  @apply bg-gray-800;
+}
+
+.dark .bottom-nav {
+  @apply bg-gray-900 border-gray-700;
+}
+
+.dark .top-header {
+  @apply bg-gray-900 border-gray-700;
+}
+
+.dark .ios-input {
+  @apply bg-gray-800 border-gray-700 text-gray-100;
+}
+
+.dark .ios-button-secondary {
+  @apply bg-gray-700 text-gray-200 hover:bg-gray-600;
+}

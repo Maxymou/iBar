@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './store/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
+import { ThemeProvider } from './store/ThemeContext';
 
 import LoginPage from './components/user/LoginPage';
 import RegisterPage from './components/user/RegisterPage';
@@ -31,7 +32,7 @@ const AppLayout = () => {
   if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-gray-50"
+    <div className="fixed inset-0 flex flex-col bg-gray-50 dark:bg-gray-900"
          style={{ height: '100dvh' }}>
       {/* Top Header */}
       {!isDetailPage && (
@@ -53,7 +54,7 @@ const AppLayout = () => {
           {/* App title */}
           <div className="flex items-center gap-2">
             <span className="text-2xl">🍸</span>
-            <h1 className="text-lg font-bold text-gray-900">IBar</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">IBar</h1>
           </div>
 
           {/* Placeholder for balance */}
@@ -99,7 +100,7 @@ const TabItem = ({ to, icon, label }) => (
     to={to}
     className={({ isActive }) =>
       `flex flex-col items-center gap-0.5 px-6 py-2 rounded-2xl transition-all
-       ${isActive ? 'text-primary-600 bg-primary-50' : 'text-gray-400'}`
+       ${isActive ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/30' : 'text-gray-400 dark:text-gray-500'}`
     }
   >
     <span className="text-xl">{icon}</span>
@@ -108,6 +109,7 @@ const TabItem = ({ to, icon, label }) => (
 );
 
 const App = () => (
+  <ThemeProvider>
   <BrowserRouter>
     <AuthProvider>
       <ToastProvider>
@@ -119,6 +121,7 @@ const App = () => (
       </ToastProvider>
     </AuthProvider>
   </BrowserRouter>
+  </ThemeProvider>
 );
 
 const PublicRoute = ({ children }) => {

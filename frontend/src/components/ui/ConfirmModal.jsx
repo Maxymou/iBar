@@ -18,7 +18,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmLabel
       </div>
     }
   >
-    <p className="text-gray-600">{message}</p>
+    <p className="text-gray-600 dark:text-gray-300">{message}</p>
   </Modal>
 );
 
