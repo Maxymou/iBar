@@ -17,7 +17,9 @@ const AccommodationsPage = () => {
   const [sort, setSort] = useState('recent');
   const [view, setView] = useState('list');
   const [addOpen, setAddOpen] = useState(false);
-  const { location, getLocation } = useGeolocation();
+  const [recenterTrigger, setRecenterTrigger] = useState(0);
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const { location, error: gpsError, getLocation } = useGeolocation();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -51,6 +53,29 @@ const AccommodationsPage = () => {
 
   useEffect(() => { load(); }, [load]);
 
+  const handleRecenterGps = () => {
+    if (location) {
+      setRecenterTrigger(t => t + 1);
+    } else {
+      setGpsLoading(true);
+      getLocation();
+    }
+  };
+
+  useEffect(() => {
+    if (location && gpsLoading) {
+      setGpsLoading(false);
+      setRecenterTrigger(t => t + 1);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    if (gpsError && gpsLoading) {
+      setGpsLoading(false);
+      toast('Position GPS indisponible', 'warning');
+    }
+  }, [gpsError]);
+
   const handleSaved = (saved) => {
     setItems(prev => {
       const exists = prev.find(i => i.id === saved.id);
@@ -59,7 +84,6 @@ const AccommodationsPage = () => {
     });
   };
 
-  // No client-side filter — the API already applies the search parameter
   const filtered = items;
 
   return (
@@ -68,17 +92,6 @@ const AccommodationsPage = () => {
       <div className="px-4 pt-3 pb-2 space-y-2 bg-white border-b border-gray-100">
         <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un hébergement..." />
         <SortToggle sort={sort} onChange={setSort} onLocationSort={() => { if (!location) getLocation(); }} />
-      </div>
-
-      {/* View toggle */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30">
-        <button
-          onClick={() => setView(v => v === 'list' ? 'map' : 'list')}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium
-                     rounded-full shadow-ios active:scale-95 transition-transform"
-        >
-          {view === 'list' ? '🗺️ Carte' : '📋 Liste'}
-        </button>
       </div>
 
       {/* Content */}
@@ -107,14 +120,41 @@ const AccommodationsPage = () => {
               userLocation={location}
               type="accommodations"
               onView={i => navigate(`/hebergements/${i.id}`)}
+              recenterTrigger={recenterTrigger}
             />
           </div>
         )}
       </div>
 
-      {/* FAB */}
+      {/* View toggle — centered, same level as FAB */}
+      <button
+        onClick={() => setView(v => v === 'list' ? 'map' : 'list')}
+        className="fixed left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2
+                   bg-gray-900 text-white text-sm font-medium rounded-full shadow-ios
+                   active:scale-95 transition-transform"
+        style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+      >
+        {view === 'list' ? '🗺️ Carte' : '📋 Liste'}
+      </button>
+
+      {/* GPS recenter button — above FAB, right side */}
+      <button
+        onClick={handleRecenterGps}
+        aria-label="Recentrer sur ma position"
+        className="fixed right-4 z-40 w-12 h-12 rounded-full bg-white border border-gray-200
+                   shadow-ios flex items-center justify-center text-xl
+                   active:scale-95 transition-transform"
+        style={{ bottom: 'calc(9rem + env(safe-area-inset-bottom))' }}
+      >
+        {gpsLoading ? (
+          <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+        ) : '🎯'}
+      </button>
+
+      {/* FAB — add accommodation */}
       <button
         onClick={() => setAddOpen(true)}
+        aria-label="Ajouter un hébergement"
         className="fab"
         style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
       >
