@@ -49,23 +49,24 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// CORS — support de plusieurs origines (séparées par des virgules dans FRONTEND_URL)
-const envOrigins = (process.env.FRONTEND_URL || '')
-  .split(',')
-  .map(s => s.trim())
-  .filter(Boolean);
+// CORS — origines autorisées depuis FRONTEND_URL et ALLOWED_ORIGINS (virgules)
 const allowedOrigins = [
-  ...envOrigins,
+  ...(process.env.FRONTEND_URL || '').split(','),
+  ...(process.env.ALLOWED_ORIGINS || '').split(','),
   'http://localhost:8000',
   'http://127.0.0.1:8000',
-].filter((v, i, arr) => arr.indexOf(v) === i);
+]
+  .map(s => s.trim())
+  .filter(Boolean)
+  .filter((v, i, arr) => arr.indexOf(v) === i);
 
 app.use(cors({
   origin: (origin, callback) => {
     // Autoriser les requêtes sans origine (curl, Postman, apps mobiles)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error(`Origine non autorisée par CORS : ${origin}`));
+    // Refus silencieux : pas de header CORS, le navigateur bloque côté client
+    callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

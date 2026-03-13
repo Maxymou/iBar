@@ -151,6 +151,11 @@ JWT_REFRESH_SECRET=<sortie de : openssl rand -hex 32>
 
 ### Étape 3 — Lancer l'installation
 
+> **Important** : si vous n'utilisez pas `install.sh` (installation manuelle), exécutez
+> `npm run setup` avant `npm start`. Cette commande télécharge Adminer (interface
+> d'administration DB) et configure les permissions nécessaires. Elle est requise
+> uniquement à la première installation et lors des mises à jour majeures d'Adminer.
+
 ```bash
 bash scripts/install.sh
 ```
@@ -517,18 +522,28 @@ GET /api/health    → { "status": "ok", "uptime": <secondes> }
 
 ## Dépannage
 
-### Page blanche depuis une IP réseau (CORS)
+### Page blanche depuis une IP réseau (ex: 192.168.1.30)
 
-Si vous accédez à l'application depuis une autre machine (ex : `http://192.168.1.30:8000`)
-et que la console du navigateur affiche des erreurs CORS, ajoutez votre IP dans `.env` :
+Si vous accédez à l'application depuis une autre machine et que la console du navigateur
+affiche des erreurs CORS, ajoutez votre IP dans `.env` :
 
 ```env
-FRONTEND_URL=http://localhost:8000,http://192.168.1.30:8000
+ALLOWED_ORIGINS=http://192.168.1.30:8000
 ```
 
-Puis redémarrez le serveur. Vous pouvez déclarer autant d'origines que nécessaire,
-séparées par des virgules. `http://localhost:8000` et `http://127.0.0.1:8000` sont
-toujours autorisées par défaut.
+Plusieurs IPs séparées par des virgules sont supportées :
+
+```env
+ALLOWED_ORIGINS=http://192.168.1.30:8000,http://mon-serveur.com
+```
+
+Puis redémarrez :
+
+```bash
+pkill -f "node server.js" && npm start
+```
+
+`http://localhost:8000` et `http://127.0.0.1:8000` sont toujours autorisées par défaut.
 
 ### Le port est déjà utilisé (`EADDRINUSE`)
 
