@@ -49,10 +49,27 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// CORS
+// CORS — support de plusieurs origines (séparées par des virgules dans FRONTEND_URL)
+const envOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+const allowedOrigins = [
+  ...envOrigins,
+  'http://localhost:8000',
+  'http://127.0.0.1:8000',
+].filter((v, i, arr) => arr.indexOf(v) === i);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: (origin, callback) => {
+    // Autoriser les requêtes sans origine (curl, Postman, apps mobiles)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`Origine non autorisée par CORS : ${origin}`));
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Body parsing
