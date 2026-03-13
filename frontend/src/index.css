@@ -157,3 +157,27 @@ body {
 .dark .ios-button-secondary {
   @apply bg-gray-700 text-gray-200 hover:bg-gray-600;
 }
+
+/* Leaflet map dark mode */
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(200deg) brightness(0.9);
+}
+
+.dark .leaflet-marker-icon,
+.dark .leaflet-marker-shadow {
+  filter: invert(1) hue-rotate(200deg);
+}
+
+.dark .leaflet-popup-content-wrapper {
+  background: #1f2937;
+  color: #f3f4f6;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.dark .leaflet-popup-tip {
+  background: #1f2937;
+}
+
+.dark .leaflet-popup-content-wrapper a {
+  color: #93c5fd;
+}

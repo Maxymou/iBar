@@ -52,7 +52,7 @@ const RestaurantCard = ({ restaurant }) => {
       </div>
 
       {/* Chevron */}
-      <div className="flex items-center text-gray-300 flex-shrink-0">›</div>
+      <div className="flex items-center text-gray-300 dark:text-gray-600 flex-shrink-0">›</div>
     </div>
   );
 };

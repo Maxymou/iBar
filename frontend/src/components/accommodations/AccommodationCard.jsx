@@ -26,8 +26,8 @@ const AccommodationCard = ({ accommodation }) => {
 
         {/* Badges */}
         <div className="flex flex-wrap gap-1 mt-0.5">
-          {wifi && <span className="badge bg-blue-50 text-blue-600">📶 Wifi</span>}
-          {parking && <span className="badge bg-green-50 text-green-600">🅿️</span>}
+          {wifi && <span className="badge bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">📶 Wifi</span>}
+          {parking && <span className="badge bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-400">🅿️</span>}
           {number_of_rooms && (
             <span className="badge bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{number_of_rooms} ch.</span>
           )}
@@ -48,7 +48,7 @@ const AccommodationCard = ({ accommodation }) => {
         </div>
       </div>
 
-      <div className="flex items-center text-gray-300 flex-shrink-0">›</div>
+      <div className="flex items-center text-gray-300 dark:text-gray-600 flex-shrink-0">›</div>
     </div>
   );
 };

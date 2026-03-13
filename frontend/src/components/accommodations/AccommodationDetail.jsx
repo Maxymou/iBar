@@ -100,8 +100,8 @@ const AccommodationDetail = () => {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{item.name}</h2>
             <div className="flex flex-wrap gap-2 mb-2">
-              {item.wifi && <span className="badge bg-blue-50 text-blue-600">📶 Wi-Fi</span>}
-              {item.parking && <span className="badge bg-green-50 text-green-600">🅿️ Parking</span>}
+              {item.wifi && <span className="badge bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">📶 Wi-Fi</span>}
+              {item.parking && <span className="badge bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-400">🅿️ Parking</span>}
               {item.number_of_rooms && (
                 <span className="badge bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">🛏️ {item.number_of_rooms} chambre{item.number_of_rooms > 1 ? 's' : ''}</span>
               )}
