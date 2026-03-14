@@ -16,16 +16,11 @@
   --gps-bottom: calc(var(--fab-bottom)   + 4rem);   /* above FAB (56 px) + 8 px gap */
 }
 
-/* ─── Standalone PWA: on this iPhone, position:fixed anchors to the
-       layout-viewport bottom (~34 px above the physical screen bottom).
-       The home-indicator zone below is painted by html/body { background-color }.
-       Adding env(sab) to the nav height only creates dead space in the visible
-       viewport and pushes tabs up — so we zero it out here. ─── */
-@media (display-mode: standalone) {
-  :root {
-    --sab: 0px;
-  }
-}
+/* ─── Standalone PWA: position:fixed anchors to the physical viewport with
+       viewport-fit:cover. env(safe-area-inset-bottom) ≈ 34 px on Face-ID iPhones.
+       We use --sab as the nav's bottom offset so it sits just above the home
+       indicator zone. The home-indicator zone itself is painted by html/body
+       background-color. ─── */
 
 /* iOS-style base styles */
 * {
@@ -135,13 +130,14 @@ body {
   @apply bg-white rounded-2xl shadow-card overflow-hidden;
 }
 
-/* Bottom nav — extends into safe area on notched phones */
+/* Bottom nav — sits above the home-indicator zone via bottom: var(--sab) */
 .bottom-nav {
-  @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100
+  @apply fixed left-0 right-0 bg-white border-t border-gray-100
          flex items-center justify-around px-4 z-50;
+  bottom: var(--sab);
   padding-top: 0;
-  padding-bottom: var(--sab);
-  height: var(--bottom-total);
+  padding-bottom: 0;
+  height: var(--nav-h);
 }
 
 /* Top header */
