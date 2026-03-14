@@ -4,18 +4,26 @@
 
 /* ─── Layout variables — single source of truth for bottom positioning ─── */
 :root {
-  --nav-h: 56px;                                  /* visible tab bar height */
-  --sat:   env(safe-area-inset-top,    0px);       /* status bar / notch */
-  --sab:   env(safe-area-inset-bottom, 0px);       /* home indicator */
+  /* Zone 1 : visible tab bar */
+  --nav-visible-h: 56px;
 
-  --header-total: calc(var(--nav-h) + var(--sat)); /* total header element height */
-  --bottom-total: calc(var(--nav-h) + var(--sab)); /* total nav element height */
+  /* Zone 2 : home indicator / safe area (env var, 0 on non-notched devices) */
+  --nav-safe-h: env(safe-area-inset-bottom, 0px);
 
-  /* Floating buttons: positioned above the fixed nav.
-     position:fixed bottom:0 on the nav guarantees it touches the physical screen
-     bottom, so --bottom-total (nav visible top) is the correct FAB base. */
-  --fab-bottom: calc(var(--bottom-total) + 1.5rem); /* 90 + 24 = 114 px from screen bottom */
-  --gps-bottom: calc(var(--fab-bottom)   + 4rem);   /* 114 + 64 = 178 px from screen bottom */
+  /* Zone 3 : total nav element height = visible + safe */
+  --nav-stack-base: calc(var(--nav-visible-h) + var(--nav-safe-h));
+
+  /* Status bar / notch (used by top header only) */
+  --sat: env(safe-area-inset-top, 0px);
+  --header-total: calc(var(--nav-visible-h) + var(--sat));
+
+  /* Floating buttons: positioned above the visible nav top.
+     Base = --nav-stack-base (= physical screen bottom up to top of visible tabs).
+     Offset is the gap between the nav top edge and the FAB bottom edge. */
+  --fab-offset: 1rem;                                         /* 16px gap above nav visible top */
+  --gps-offset: 4rem;                                         /* 64px gap above FAB */
+  --fab-bottom: calc(var(--nav-stack-base) + var(--fab-offset)); /* sab + 56 + 16 */
+  --gps-bottom: calc(var(--fab-bottom)     + var(--gps-offset)); /* fab + 64 */
 }
 
 /* ─── Standalone PWA: position:fixed anchors to the physical viewport with
@@ -132,27 +140,33 @@ body {
   @apply bg-white rounded-2xl shadow-card overflow-hidden;
 }
 
-/* Bottom nav — position:fixed guarantees bottom:0 = physical screen bottom on iOS PWA.
-   Two-zone layout via flex-column:
-     1. .bottom-nav-inner  (56px) — the visible content row with icons/labels
-     2. ::after spacer     (--sab) — background paint behind home indicator
-   Icons are anchored at the BOTTOM of the visible zone (just above home indicator),
-   not floating in the upper portion of a block that includes the safe area. */
+/* Bottom nav — position:fixed, bottom:0 = physical screen bottom on iOS PWA.
+   Three-zone stack (flex-column + flex-end):
+     ┌────────────────────────────────┐  ← nav element top (nav-stack-base from screen bottom)
+     │  .bottom-nav-inner  56px       │  ← visible tab row, icons/labels
+     ├────────────────────────────────┤  ← visible nav bottom = just above safe area
+     │  ::after            --nav-safe-h│ ← safe area spacer, painted nav colour
+     └────────────────────────────────┘  ← screen physical bottom
+   justify-content:flex-end anchors the inner row to the bottom of the visible zone,
+   preventing it from floating at the top of the container. */
 .bottom-nav {
   @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;   /* anchor .bottom-nav-inner to bottom of container */
 }
 
 .bottom-nav-inner {
   @apply flex items-center justify-around px-4;
-  height: var(--nav-h);   /* 56px — centering scoped to the visible zone only */
+  height: var(--nav-visible-h);   /* 56px — centering scoped to the visible zone only */
+  flex-shrink: 0;
 }
 
-/* Safe area zone: painted by nav background, sits between icons and physical screen edge */
+/* Safe area spacer: painted by nav background, sits between icons and physical screen edge */
 .bottom-nav::after {
   content: '';
-  height: var(--sab);     /* ~34px on Face ID iPhones, 0 on older devices */
+  height: var(--nav-safe-h);   /* ~34px on Face ID iPhones, 0 on older/desktop */
+  flex-shrink: 0;
 }
 
 /* Top header — flex item, not fixed. Padding-top handles status bar zone. */
@@ -160,7 +174,7 @@ body {
   @apply bg-white border-b border-gray-100 z-40
          flex items-center justify-between px-4;
   padding-top: var(--sat);
-  height: var(--header-total);
+  height: var(--header-total);   /* nav-visible-h + sat */
 }
 
 /* Input style */
