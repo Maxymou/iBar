@@ -16,12 +16,14 @@
   --gps-bottom: calc(var(--fab-bottom)   + 4rem);   /* above FAB (56 px) + 8 px gap */
 }
 
-/* ─── Standalone PWA: iOS may report env(sab) with the full Safari toolbar
-       height (~83 px) instead of just the home indicator (~34 px).
-       Cap at 40 px to eliminate the phantom empty space. ─── */
+/* ─── Standalone PWA: on this iPhone, position:fixed anchors to the
+       layout-viewport bottom (~34 px above the physical screen bottom).
+       The home-indicator zone below is painted by html/body { background-color }.
+       Adding env(sab) to the nav height only creates dead space in the visible
+       viewport and pushes tabs up — so we zero it out here. ─── */
 @media (display-mode: standalone) {
   :root {
-    --sab: min(env(safe-area-inset-bottom, 0px), 40px);
+    --sab: 0px;
   }
 }
 
