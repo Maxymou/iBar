@@ -94,7 +94,7 @@ const TabItem = ({ to, icon, label }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
-      `flex flex-col items-center gap-0.5 px-6 py-2 rounded-2xl transition-all
+      `flex flex-col items-center gap-0.5 px-6 py-1.5 rounded-xl transition-all
        ${isActive ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/30' : 'text-gray-400 dark:text-gray-500'}`
     }
   >

@@ -5,7 +5,7 @@
 /* ─── Layout variables — single source of truth for bottom positioning ─── */
 :root {
   /* Zone 1 : visible tab bar */
-  --nav-visible-h: 56px;
+  --nav-visible-h: 50px;
 
   /* Zone 2 : home indicator / safe area (env var, 0 on non-notched devices) */
   --nav-safe-h: env(safe-area-inset-bottom, 0px);
@@ -20,9 +20,9 @@
   /* Floating buttons: positioned above the visible nav top.
      Base = --nav-stack-base (= physical screen bottom up to top of visible tabs).
      Offset is the gap between the nav top edge and the FAB bottom edge. */
-  --fab-offset: 1rem;                                         /* 16px gap above nav visible top */
-  --gps-offset: 4rem;                                         /* 64px gap above FAB */
-  --fab-bottom: calc(var(--nav-stack-base) + var(--fab-offset)); /* sab + 56 + 16 */
+  --fab-offset: 0.5rem;                                         /* 8px gap above nav visible top */
+  --gps-offset: 4rem;                                           /* 64px gap above FAB */
+  --fab-bottom: calc(var(--nav-stack-base) + var(--fab-offset)); /* sab + 50 + 8 */
   --gps-bottom: calc(var(--fab-bottom)     + var(--gps-offset)); /* fab + 64 */
 }
 
