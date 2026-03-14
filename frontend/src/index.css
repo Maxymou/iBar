@@ -1,3 +1,14 @@
+/* ═══════════════════════════════════════════════════
+   DEBUG TEMPORAIRE — À SUPPRIMER après validation
+   Objectif : identifier quel layer produit la bande blanche
+   ═══════════════════════════════════════════════════ */
+html         { background: red   !important; }
+body         { background: green !important; }
+#root        { background: blue  !important; }
+/* AppLayout (fixed inset-0) est stylé directement dans App.jsx */
+
+/* ════════════════════════════════════════════════════════ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

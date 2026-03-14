@@ -32,7 +32,8 @@ const AppLayout = () => {
   if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="fixed inset-0 flex flex-col bg-gray-50 dark:bg-gray-900"
+         style={{ background: 'purple' /* DEBUG — à supprimer */ }}>
       {/* Top Header */}
       {!isDetailPage && (
         <header className="top-header">
