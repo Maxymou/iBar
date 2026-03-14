@@ -14,7 +14,7 @@ const AccommodationsPage = lazy(() => import('./components/accommodations/Accomm
 const AccommodationDetail = lazy(() => import('./components/accommodations/AccommodationDetail'));
 
 const PageSpinner = () => (
-  <div className="flex items-center justify-center h-screen">
+  <div className="flex items-center justify-center h-full">
     <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
   </div>
 );
@@ -126,7 +126,7 @@ const App = () => (
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center" style={{ minHeight: '100dvh' }}>
       <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
