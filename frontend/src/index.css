@@ -130,19 +130,18 @@ body {
   @apply bg-white rounded-2xl shadow-card overflow-hidden;
 }
 
-/* Bottom nav — iOS native pattern: background extends behind home indicator,
-   icons pushed above it via padding-bottom. */
+/* Bottom nav — flex item, not fixed. Padding-bottom handles home indicator zone. */
 .bottom-nav {
-  @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100
+  @apply bg-white border-t border-gray-100
          flex items-center justify-around px-4 z-50;
   padding-top: 0;
   padding-bottom: var(--sab);
   height: var(--bottom-total);
 }
 
-/* Top header */
+/* Top header — flex item, not fixed. Padding-top handles status bar zone. */
 .top-header {
-  @apply fixed top-0 left-0 right-0 bg-white border-b border-gray-100 z-40
+  @apply bg-white border-b border-gray-100 z-40
          flex items-center justify-between px-4;
   padding-top: var(--sat);
   height: var(--header-total);
