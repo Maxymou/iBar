@@ -108,7 +108,7 @@ const AccommodationsPage = () => {
                 <p className="text-sm">{search ? 'Aucun résultat' : 'Aucun hébergement'}</p>
               </div>
             ) : (
-              <div className="p-4 space-y-3 pb-32">
+              <div className="p-4 space-y-3 pb-36">
                 {filtered.map(i => <AccommodationCard key={i.id} accommodation={i} />)}
               </div>
             )}
@@ -132,7 +132,7 @@ const AccommodationsPage = () => {
         className="fixed left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2
                    bg-gray-900 dark:bg-gray-700 text-white text-sm font-medium rounded-full shadow-ios
                    active:scale-95 transition-transform"
-        style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+        style={{ bottom: 'var(--fab-bottom)' }}
       >
         {view === 'list' ? '🗺️ Carte' : '📋 Liste'}
       </button>
@@ -144,7 +144,7 @@ const AccommodationsPage = () => {
         className="fixed right-4 z-40 w-12 h-12 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600
                    shadow-ios flex items-center justify-center text-xl
                    active:scale-95 transition-transform"
-        style={{ bottom: 'calc(9rem + env(safe-area-inset-bottom))' }}
+        style={{ bottom: 'var(--gps-bottom)' }}
       >
         {gpsLoading ? (
           <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
@@ -156,7 +156,7 @@ const AccommodationsPage = () => {
         onClick={() => setAddOpen(true)}
         aria-label="Ajouter un hébergement"
         className="fab"
-        style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+        style={{ bottom: 'var(--fab-bottom)' }}
       >
         +
       </button>
