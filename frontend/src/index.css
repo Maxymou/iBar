@@ -8,12 +8,15 @@
   --sat:   env(safe-area-inset-top,    0px);       /* status bar / notch */
   --sab:   env(safe-area-inset-bottom, 0px);       /* home indicator */
 
-  --header-total: calc(var(--nav-h) + var(--sat));
-  --bottom-total: calc(var(--nav-h) + var(--sab));
+  --header-total: calc(var(--nav-h) + var(--sat)); /* total header element height */
+  --bottom-total: calc(var(--nav-h) + var(--sab)); /* total nav element height (sizing only) */
 
-  /* Floating buttons above the nav bar */
-  --fab-bottom: calc(var(--bottom-total) + 1.5rem); /* 24 px clearance above nav */
-  --gps-bottom: calc(var(--fab-bottom)   + 4rem);   /* above FAB (56 px) + 8 px gap */
+  /* ─── Floating buttons: offset from the VISIBLE nav top (--nav-h), not from
+         --bottom-total. --bottom-total includes --sab (home indicator zone, ~34 px)
+         which lives BELOW the visible nav row — adding it to fixed-position offsets
+         pushes every floating button 34 px too high. ─── */
+  --fab-bottom: calc(var(--nav-h) + 1.5rem);       /* 56 + 24 = 80 px from viewport bottom */
+  --gps-bottom: calc(var(--fab-bottom) + 4rem);    /* 80 + 64 = 144 px from viewport bottom */
 }
 
 /* ─── Standalone PWA: position:fixed anchors to the physical viewport with
