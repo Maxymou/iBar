@@ -12,7 +12,7 @@ const AccommodationCard = ({ accommodation }) => {
       onClick={() => navigate(`/hebergements/${accommodation.id}`)}
     >
       {/* Photo */}
-      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
         {photo_url ? (
           <img src={photo_url} alt={name} className="w-full h-full object-cover" />
         ) : (
@@ -22,24 +22,24 @@ const AccommodationCard = ({ accommodation }) => {
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-gray-900 truncate">{name}</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{name}</h3>
 
         {/* Badges */}
         <div className="flex flex-wrap gap-1 mt-0.5">
-          {wifi && <span className="badge bg-blue-50 text-blue-600">📶 Wifi</span>}
-          {parking && <span className="badge bg-green-50 text-green-600">🅿️</span>}
+          {wifi && <span className="badge bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">📶 Wifi</span>}
+          {parking && <span className="badge bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-400">🅿️</span>}
           {number_of_rooms && (
-            <span className="badge bg-gray-100 text-gray-600">{number_of_rooms} ch.</span>
+            <span className="badge bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{number_of_rooms} ch.</span>
           )}
         </div>
 
         {address && (
-          <p className="text-xs text-gray-500 mt-0.5 truncate">📍 {address}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">📍 {address}</p>
         )}
 
         <div className="flex items-center justify-between mt-1.5">
           <div className="flex items-center gap-2">
-            {rating ? <StarRating value={rating} size="sm" /> : <span className="text-xs text-gray-400">Pas de note</span>}
+            {rating ? <StarRating value={rating} size="sm" /> : <span className="text-xs text-gray-400 dark:text-gray-500">Pas de note</span>}
             {price && <span className="text-xs font-semibold text-primary-600">{formatPrice(price)}</span>}
           </div>
           {distance != null && (
@@ -48,7 +48,7 @@ const AccommodationCard = ({ accommodation }) => {
         </div>
       </div>
 
-      <div className="flex items-center text-gray-300 flex-shrink-0">›</div>
+      <div className="flex items-center text-gray-300 dark:text-gray-600 flex-shrink-0">›</div>
     </div>
   );
 };

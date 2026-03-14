@@ -13,7 +13,7 @@ const Toggle = ({ value, onChange, label }) => (
       <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform
                       ${value ? 'translate-x-5' : 'translate-x-0'}`} />
     </div>
-    <span className="text-sm font-medium text-gray-700">{label}</span>
+    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{label}</span>
   </label>
 );
 
@@ -124,7 +124,7 @@ const AccommodationForm = ({ isOpen, onClose, accommodation, onSaved }) => {
     >
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Photo</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Photo</label>
           <ImageUpload value={photo} onChange={handlePhotoChange} preview={preview} />
         </div>
 
@@ -136,7 +136,7 @@ const AccommodationForm = ({ isOpen, onClose, accommodation, onSaved }) => {
           { label: 'Nombre de chambres', field: 'number_of_rooms', type: 'number', placeholder: '0' },
         ].map(({ label, field, type, placeholder }) => (
           <div key={field}>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">{label}</label>
             <input type={type} value={form[field]} onChange={set(field)}
                    placeholder={placeholder} className="ios-input" />
           </div>
@@ -148,25 +148,25 @@ const AccommodationForm = ({ isOpen, onClose, accommodation, onSaved }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Note</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Note</label>
           <StarRating value={form.rating} onChange={v => setForm(p => ({ ...p, rating: v }))} size="lg" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Date de visite</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Date de visite</label>
           <input type="date" value={form.visit_date} onChange={set('visit_date')} className="ios-input" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Commentaire</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Commentaire</label>
           <textarea value={form.comment} onChange={set('comment')} rows={3}
                     placeholder="Vos impressions..." className="ios-input resize-none" />
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Localisation GPS</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Localisation GPS</label>
           <button type="button" onClick={handleGeolocate}
-                  className="w-full py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium">
+                  className="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium">
             📍 Utiliser ma position actuelle
           </button>
           <div className="flex gap-2">

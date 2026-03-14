@@ -42,30 +42,30 @@ const RegisterPage = () => {
         <h1 className="text-4xl font-bold text-white">IBar</h1>
       </div>
 
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-ios-lg p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Créer un compte</h2>
+      <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-3xl shadow-ios-lg p-6">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Créer un compte</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Nom</label>
             <input type="text" value={form.name} onChange={set('name')}
                    placeholder="Votre nom" required className="ios-input" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Email</label>
             <input type="email" value={form.email} onChange={set('email')}
                    placeholder="votre@email.com" required autoComplete="email" className="ios-input" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Mot de passe</label>
             <input type="password" value={form.password} onChange={set('password')}
                    placeholder="••••••••" required className="ios-input" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le mot de passe</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Confirmer le mot de passe</label>
             <input type="password" value={form.confirm} onChange={set('confirm')}
                    placeholder="••••••••" required className="ios-input" />
           </div>
@@ -76,7 +76,7 @@ const RegisterPage = () => {
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-5">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-5">
           Déjà un compte ?{' '}
           <Link to="/login" className="text-primary-600 font-medium">Se connecter</Link>
         </p>

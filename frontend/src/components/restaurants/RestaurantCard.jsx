@@ -12,7 +12,7 @@ const RestaurantCard = ({ restaurant }) => {
       onClick={() => navigate(`/restaurants/${restaurant.id}`)}
     >
       {/* Photo */}
-      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
         {photo_url ? (
           <img src={photo_url} alt={name} className="w-full h-full object-cover" />
         ) : (
@@ -23,7 +23,7 @@ const RestaurantCard = ({ restaurant }) => {
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-gray-900 truncate">{name}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white truncate">{name}</h3>
           <div className="flex gap-1 flex-shrink-0">
             {bar && (
               <span className="badge bg-amber-100 text-amber-700">🍺 Bar</span>
@@ -36,14 +36,14 @@ const RestaurantCard = ({ restaurant }) => {
         )}
 
         {address && (
-          <p className="text-xs text-gray-500 mt-0.5 truncate">📍 {address}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">📍 {address}</p>
         )}
 
         <div className="flex items-center justify-between mt-1.5">
           {rating ? (
             <StarRating value={rating} size="sm" />
           ) : (
-            <span className="text-xs text-gray-400">Pas de note</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">Pas de note</span>
           )}
           {distance != null && (
             <span className="text-xs text-gray-400">{formatDistance(distance)}</span>
@@ -52,7 +52,7 @@ const RestaurantCard = ({ restaurant }) => {
       </div>
 
       {/* Chevron */}
-      <div className="flex items-center text-gray-300 flex-shrink-0">›</div>
+      <div className="flex items-center text-gray-300 dark:text-gray-600 flex-shrink-0">›</div>
     </div>
   );
 };

@@ -154,7 +154,7 @@ const RestaurantForm = ({ isOpen, onClose, restaurant, onSaved }) => {
               <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform
                               ${form.bar ? 'translate-x-5' : 'translate-x-0'}`} />
             </div>
-            <span className="text-sm font-medium text-gray-700">🍺 C'est aussi un bar</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">🍺 C'est aussi un bar</span>
           </label>
         </div>
 
@@ -172,9 +172,9 @@ const RestaurantForm = ({ isOpen, onClose, restaurant, onSaved }) => {
         </FormField>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Localisation GPS</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Localisation GPS</label>
           <button type="button" onClick={handleGeolocate}
-                  className="w-full py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium">
+                  className="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium">
             📍 Utiliser ma position actuelle
           </button>
           <div className="flex gap-2">
@@ -191,7 +191,7 @@ const RestaurantForm = ({ isOpen, onClose, restaurant, onSaved }) => {
 
 const FormField = ({ label, children }) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">{label}</label>
     {children}
   </div>
 );

@@ -57,26 +57,26 @@ const AccommodationDetail = () => {
   const navLinks = openNavigation(item.address, item.latitude, item.longitude);
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-gray-50">
+    <div className="fixed inset-0 flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100"
+      <div className="fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-700"
            style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex items-center justify-between px-4 h-14">
           <button onClick={() => navigate(-1)}
                   aria-label="Retour"
-                  className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 text-xl">
+                  className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-200 text-xl">
             ‹
           </button>
-          <h1 className="font-semibold text-gray-900 truncate mx-4">{item.name}</h1>
+          <h1 className="font-semibold text-gray-900 dark:text-white truncate mx-4">{item.name}</h1>
           <div className="flex gap-2">
             <button onClick={() => setEditOpen(true)}
                     aria-label="Modifier"
-                    className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm">
+                    className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-200 text-sm">
               ✏️
             </button>
             <button onClick={() => setDeleteOpen(true)}
                     aria-label="Supprimer"
-                    className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 text-sm">
+                    className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center text-red-500 text-sm">
               🗑️
             </button>
           </div>
@@ -87,7 +87,7 @@ const AccommodationDetail = () => {
       <div className="flex-1 overflow-y-auto"
            style={{ paddingTop: `calc(56px + env(safe-area-inset-top))`, WebkitOverflowScrolling: 'touch' }}>
         {/* Photo */}
-        <div className="w-full h-56 bg-gray-100 overflow-hidden flex-shrink-0">
+        <div className="w-full h-56 bg-gray-100 dark:bg-gray-800 overflow-hidden flex-shrink-0">
           {item.photo_url ? (
             <img src={item.photo_url} alt={item.name} className="w-full h-full object-cover" />
           ) : (
@@ -98,12 +98,12 @@ const AccommodationDetail = () => {
         <div className="px-4 py-5 space-y-4" style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' }}>
           {/* Name + info */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{item.name}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{item.name}</h2>
             <div className="flex flex-wrap gap-2 mb-2">
-              {item.wifi && <span className="badge bg-blue-50 text-blue-600">📶 Wi-Fi</span>}
-              {item.parking && <span className="badge bg-green-50 text-green-600">🅿️ Parking</span>}
+              {item.wifi && <span className="badge bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">📶 Wi-Fi</span>}
+              {item.parking && <span className="badge bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-400">🅿️ Parking</span>}
               {item.number_of_rooms && (
-                <span className="badge bg-gray-100 text-gray-600">🛏️ {item.number_of_rooms} chambre{item.number_of_rooms > 1 ? 's' : ''}</span>
+                <span className="badge bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">🛏️ {item.number_of_rooms} chambre{item.number_of_rooms > 1 ? 's' : ''}</span>
               )}
             </div>
             {item.rating && <StarRating value={item.rating} size="lg" />}
@@ -130,14 +130,14 @@ const AccommodationDetail = () => {
             <div className="ios-card p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">💬</span>
-                <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Commentaire</span>
+                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Commentaire</span>
               </div>
-              <p className="text-gray-700 leading-relaxed">{item.comment}</p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{item.comment}</p>
             </div>
           )}
 
           <div className="ios-card p-4 space-y-2">
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Informations</p>
+            <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Informations</p>
             {item.created_by_name && <MetaRow label="Ajouté par" value={item.created_by_name} />}
             {item.created_at && <MetaRow label="Ajouté le" value={formatDate(item.created_at)} />}
             {item.updated_by_name && <MetaRow label="Modifié par" value={item.updated_by_name} />}
@@ -158,13 +158,13 @@ const AccommodationDetail = () => {
                  </a>
                </div>
              }>
-        <p className="text-gray-600">Appeler <strong>{item.name}</strong> au :</p>
-        <p className="text-2xl font-bold text-gray-900 mt-2">{item.phone}</p>
+        <p className="text-gray-600 dark:text-gray-300">Appeler <strong>{item.name}</strong> au :</p>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{item.phone}</p>
       </Modal>
 
       {/* Nav modal */}
       <Modal isOpen={navOpen} onClose={() => setNavOpen(false)} title="Naviguer vers">
-        <p className="text-gray-600 mb-4">{item.address}</p>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">{item.address}</p>
         <div className="space-y-3">
           {[
             { href: navLinks.waze, icon: '🚗', label: 'Waze', desc: 'Navigation en temps réel' },
@@ -172,12 +172,12 @@ const AccommodationDetail = () => {
             ...(isIOS() ? [{ href: navLinks.apple, icon: '🍎', label: 'Plans Apple', desc: 'Application Plans' }] : []),
           ].map(link => (
             <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
-               className="flex items-center gap-3 p-4 rounded-xl border border-gray-200 active:bg-gray-50"
+               className="flex items-center gap-3 p-4 rounded-xl border border-gray-200 dark:border-gray-700 active:bg-gray-50 dark:active:bg-gray-800"
                onClick={() => setNavOpen(false)}>
               <span className="text-2xl">{link.icon}</span>
               <div>
-                <p className="font-semibold text-gray-900">{link.label}</p>
-                <p className="text-sm text-gray-500">{link.desc}</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{link.label}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{link.desc}</p>
               </div>
             </a>
           ))}
