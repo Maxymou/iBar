@@ -32,10 +32,10 @@ const AppLayout = () => {
   if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col h-full overflow-hidden bg-gray-50 dark:bg-gray-900">
       {/* Top Header */}
       {!isDetailPage && (
-        <header className="top-header">
+        <header className="top-header flex-shrink-0">
           {/* Avatar / Drawer toggle */}
           <button
             onClick={() => setDrawerOpen(true)}
@@ -62,13 +62,7 @@ const AppLayout = () => {
       )}
 
       {/* Main Content */}
-      <main
-        className="flex-1 overflow-hidden"
-        style={{
-          marginTop:    isDetailPage ? 0 : 'var(--header-total)',
-          marginBottom: isDetailPage ? 0 : 'var(--bottom-total)',
-        }}
-      >
+      <main className="flex-1 min-h-0 overflow-hidden">
         <Suspense fallback={<PageSpinner />}>
           <Routes>
             <Route path="/" element={<Navigate to="/restaurants" replace />} />
@@ -82,7 +76,7 @@ const AppLayout = () => {
 
       {/* Bottom Navigation */}
       {!isDetailPage && (
-        <nav className="bottom-nav">
+        <nav className="bottom-nav flex-shrink-0">
           <TabItem to="/restaurants" icon="🍽️" label="Restaurants" />
           <TabItem to="/hebergements" icon="🏨" label="Hébergements" />
         </nav>
