@@ -130,14 +130,14 @@ body {
   @apply bg-white rounded-2xl shadow-card overflow-hidden;
 }
 
-/* Bottom nav — sits above the home-indicator zone via bottom: var(--sab) */
+/* Bottom nav — iOS native pattern: background extends behind home indicator,
+   icons pushed above it via padding-bottom. */
 .bottom-nav {
-  @apply fixed left-0 right-0 bg-white border-t border-gray-100
+  @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100
          flex items-center justify-around px-4 z-50;
-  bottom: var(--sab);
   padding-top: 0;
-  padding-bottom: 0;
-  height: var(--nav-h);
+  padding-bottom: var(--sab);
+  height: var(--bottom-total);
 }
 
 /* Top header */
