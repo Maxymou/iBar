@@ -36,6 +36,16 @@ html, body, #root {
   overflow: hidden;
 }
 
+/* On iOS standalone PWA, position:fixed elements stop at the layout-viewport
+   bottom, leaving the home-indicator zone (~34 px) uncovered.
+   Setting the html background to match the nav bar color fills that gap. */
+html {
+  background-color: #ffffff; /* matches .bottom-nav (light) */
+}
+html.dark {
+  background-color: #111827; /* matches .dark .bottom-nav (gray-900) */
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
