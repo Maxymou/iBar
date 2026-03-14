@@ -130,13 +130,18 @@ body {
   @apply bg-white rounded-2xl shadow-card overflow-hidden;
 }
 
-/* Bottom nav — flex item, not fixed. Padding-bottom handles home indicator zone. */
+/* Bottom nav — flex item, not fixed.
+   Two-zone layout: inner content row (--nav-h = 56px) + safe area padding below.
+   Centering happens only within the 56px visible zone, not the full 90px total height. */
 .bottom-nav {
-  @apply bg-white border-t border-gray-100
-         flex items-center justify-around px-4 z-50;
-  padding-top: 0;
-  padding-bottom: var(--sab);
-  height: var(--bottom-total);
+  @apply bg-white border-t border-gray-100 z-50;
+  height: var(--bottom-total);  /* 56px + 34px = 90px total */
+  padding-bottom: var(--sab);   /* 34px safe area zone — below icons */
+}
+
+.bottom-nav-inner {
+  @apply flex items-center justify-around px-4;
+  height: var(--nav-h);         /* 56px — icons centered within visible zone only */
 }
 
 /* Top header — flex item, not fixed. Padding-top handles status bar zone. */
