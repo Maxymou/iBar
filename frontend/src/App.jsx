@@ -32,8 +32,7 @@ const AppLayout = () => {
   if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-gray-50 dark:bg-gray-900"
-         style={{ height: '100dvh' }}>
+    <div className="fixed inset-0 flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Top Header */}
       {!isDetailPage && (
         <header className="top-header">
@@ -66,8 +65,8 @@ const AppLayout = () => {
       <main
         className="flex-1 overflow-hidden"
         style={{
-          marginTop:    isDetailPage ? 0 : `calc(56px + env(safe-area-inset-top))`,
-          marginBottom: isDetailPage ? 0 : `calc(56px + env(safe-area-inset-bottom))`,
+          marginTop:    isDetailPage ? 0 : 'var(--header-total)',
+          marginBottom: isDetailPage ? 0 : 'var(--bottom-total)',
         }}
       >
         <Suspense fallback={<PageSpinner />}>

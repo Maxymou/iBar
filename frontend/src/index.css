@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Layout variables — single source of truth for bottom positioning ─── */
+:root {
+  --nav-h: 56px;                                  /* visible tab bar height */
+  --sat:   env(safe-area-inset-top,    0px);       /* status bar / notch */
+  --sab:   env(safe-area-inset-bottom, 0px);       /* home indicator */
+
+  --header-total: calc(var(--nav-h) + var(--sat));
+  --bottom-total: calc(var(--nav-h) + var(--sab));
+
+  /* Floating buttons above the nav bar */
+  --fab-bottom: calc(var(--bottom-total) + 1.5rem); /* 24 px clearance above nav */
+  --gps-bottom: calc(var(--fab-bottom)   + 4rem);   /* above FAB (56 px) + 8 px gap */
+}
+
+/* ─── Standalone PWA: iOS may report env(sab) with the full Safari toolbar
+       height (~83 px) instead of just the home indicator (~34 px).
+       Cap at 40 px to eliminate the phantom empty space. ─── */
+@media (display-mode: standalone) {
+  :root {
+    --sab: min(env(safe-area-inset-bottom, 0px), 40px);
+  }
+}
+
 /* iOS-style base styles */
 * {
   -webkit-tap-highlight-color: transparent;
@@ -10,7 +33,6 @@
 
 html, body, #root {
   height: 100%;
-  height: 100dvh;
   overflow: hidden;
 }
 
@@ -85,19 +107,17 @@ body {
 .bottom-nav {
   @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100
          flex items-center justify-around px-4 z-50;
-  /* Content height 56px, then padding fills the safe area below */
   padding-top: 0;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  height: calc(56px + env(safe-area-inset-bottom, 0px));
-  min-height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: var(--sab);
+  height: var(--bottom-total);
 }
 
 /* Top header */
 .top-header {
   @apply fixed top-0 left-0 right-0 bg-white border-b border-gray-100 z-40
          flex items-center justify-between px-4;
-  padding-top: env(safe-area-inset-top, 0px);
-  height: calc(56px + env(safe-area-inset-top, 0px));
+  padding-top: var(--sat);
+  height: var(--header-total);
 }
 
 /* Input style */
@@ -119,17 +139,6 @@ body {
 
 .ios-button-secondary {
   @apply ios-button bg-gray-100 text-gray-700 hover:bg-gray-200;
-}
-
-/* Scrollable content area */
-.content-area {
-  position: fixed;
-  top: calc(56px + env(safe-area-inset-top, 0px));
-  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
-  left: 0;
-  right: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Badge */
