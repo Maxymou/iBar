@@ -4,6 +4,7 @@
   "description": "Gérez vos restaurants et hébergements favoris",
   "theme_color": "#1d4ed8",
   "background_color": "#ffffff",
+  "display_override": ["standalone"],
   "display": "standalone",
   "orientation": "portrait",
   "start_url": "/",
