@@ -76,7 +76,7 @@ const AppLayout = () => {
 
       {/* Bottom Navigation */}
       {!isDetailPage && (
-        <nav className="bottom-nav flex-shrink-0">
+        <nav className="bottom-nav">
           <div className="bottom-nav-inner">
             <TabItem to="/restaurants" icon="🍽️" label="Restaurants" />
             <TabItem to="/hebergements" icon="🏨" label="Hébergements" />
