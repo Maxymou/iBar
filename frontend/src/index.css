@@ -9,14 +9,13 @@
   --sab:   env(safe-area-inset-bottom, 0px);       /* home indicator */
 
   --header-total: calc(var(--nav-h) + var(--sat)); /* total header element height */
-  --bottom-total: calc(var(--nav-h) + var(--sab)); /* total nav element height (sizing only) */
+  --bottom-total: calc(var(--nav-h) + var(--sab)); /* total nav element height */
 
-  /* ─── Floating buttons: offset from the VISIBLE nav top (--nav-h), not from
-         --bottom-total. --bottom-total includes --sab (home indicator zone, ~34 px)
-         which lives BELOW the visible nav row — adding it to fixed-position offsets
-         pushes every floating button 34 px too high. ─── */
-  --fab-bottom: calc(var(--nav-h) + 1.5rem);       /* 56 + 24 = 80 px from viewport bottom */
-  --gps-bottom: calc(var(--fab-bottom) + 4rem);    /* 80 + 64 = 144 px from viewport bottom */
+  /* Floating buttons: positioned above the fixed nav.
+     position:fixed bottom:0 on the nav guarantees it touches the physical screen
+     bottom, so --bottom-total (nav visible top) is the correct FAB base. */
+  --fab-bottom: calc(var(--bottom-total) + 1.5rem); /* 90 + 24 = 114 px from screen bottom */
+  --gps-bottom: calc(var(--fab-bottom)   + 4rem);   /* 114 + 64 = 178 px from screen bottom */
 }
 
 /* ─── Standalone PWA: position:fixed anchors to the physical viewport with
@@ -133,18 +132,27 @@ body {
   @apply bg-white rounded-2xl shadow-card overflow-hidden;
 }
 
-/* Bottom nav — flex item, not fixed.
-   Two-zone layout: inner content row (--nav-h = 56px) + safe area padding below.
-   Centering happens only within the 56px visible zone, not the full 90px total height. */
+/* Bottom nav — position:fixed guarantees bottom:0 = physical screen bottom on iOS PWA.
+   Two-zone layout via flex-column:
+     1. .bottom-nav-inner  (56px) — the visible content row with icons/labels
+     2. ::after spacer     (--sab) — background paint behind home indicator
+   Icons are anchored at the BOTTOM of the visible zone (just above home indicator),
+   not floating in the upper portion of a block that includes the safe area. */
 .bottom-nav {
-  @apply bg-white border-t border-gray-100 z-50;
-  height: var(--bottom-total);  /* 56px + 34px = 90px total */
-  padding-bottom: var(--sab);   /* 34px safe area zone — below icons */
+  @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50;
+  display: flex;
+  flex-direction: column;
 }
 
 .bottom-nav-inner {
   @apply flex items-center justify-around px-4;
-  height: var(--nav-h);         /* 56px — icons centered within visible zone only */
+  height: var(--nav-h);   /* 56px — centering scoped to the visible zone only */
+}
+
+/* Safe area zone: painted by nav background, sits between icons and physical screen edge */
+.bottom-nav::after {
+  content: '';
+  height: var(--sab);     /* ~34px on Face ID iPhones, 0 on older devices */
 }
 
 /* Top header — flex item, not fixed. Padding-top handles status bar zone. */
