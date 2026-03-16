@@ -5,7 +5,7 @@ const { compressImage, deleteImage } = require('../services/imageService');
 const { haversineSQL } = require('../utils/geoUtils');
 
 const getAll = async (req, res) => {
-  const { search, sort, lat, lng, limit = 100, offset = 0 } = req.query;
+  const { search, sort, lat, lng, limit = 50, offset = 0 } = req.query;
   const hasLocation = sort === 'distance' && lat && lng;
 
   const params = [];
@@ -28,11 +28,14 @@ const getAll = async (req, res) => {
     paramIdx = geo.nextIdx;
   }
 
-  params.push(parseInt(limit), parseInt(offset));
-
   const searchClause = search
     ? 'AND (a.name ILIKE $1 OR a.address ILIKE $1)'
     : '';
+
+  const countParams = search ? [`%${search}%`] : [];
+  const countQuery = `SELECT COUNT(*) FROM accommodations a WHERE a.is_archived = false ${searchClause}`;
+
+  params.push(parseInt(limit), parseInt(offset));
 
   const query = `
     SELECT a.*, u1.name AS created_by_name, u2.name AS updated_by_name,
@@ -46,8 +49,12 @@ const getAll = async (req, res) => {
   `;
 
   try {
-    const result = await db.query(query, params);
-    res.json(result.rows);
+    const [result, countResult] = await Promise.all([
+      db.query(query, params),
+      db.query(countQuery, countParams),
+    ]);
+    const total = parseInt(countResult.rows[0].count);
+    res.json({ data: result.rows, total, limit: parseInt(limit), offset: parseInt(offset) });
   } catch (err) {
     console.error('Get accommodations error:', err);
     res.status(500).json({ error: 'Erreur lors de la récupération des hébergements' });
@@ -202,4 +209,44 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getOne, create, update, remove };
+const getArchived = async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT a.*, u1.name AS created_by_name, u2.name AS updated_by_name
+      FROM accommodations a
+      LEFT JOIN users u1 ON a.created_by = u1.id
+      LEFT JOIN users u2 ON a.updated_by = u2.id
+      WHERE a.is_archived = true AND a.created_by = $1
+      ORDER BY a.updated_at DESC
+    `, [req.user.id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Get archived accommodations error:', err);
+    res.status(500).json({ error: 'Erreur lors de la récupération des hébergements archivés' });
+  }
+};
+
+const restore = async (req, res) => {
+  try {
+    const existing = await db.query(
+      'SELECT created_by FROM accommodations WHERE id = $1 AND is_archived = true', [req.params.id]
+    );
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ error: 'Hébergement archivé introuvable' });
+    }
+    if (existing.rows[0].created_by !== req.user.id) {
+      return res.status(403).json({ error: 'Non autorisé' });
+    }
+
+    const result = await db.query(
+      'UPDATE accommodations SET is_archived = false, updated_at = NOW() WHERE id = $1 RETURNING *',
+      [req.params.id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Restore accommodation error:', err);
+    res.status(500).json({ error: 'Erreur lors de la restauration' });
+  }
+};
+
+module.exports = { getAll, getOne, create, update, remove, getArchived, restore };

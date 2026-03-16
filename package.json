@@ -10,6 +10,7 @@
     "dev:frontend": "cd frontend && npm run dev",
     "setup": "bash scripts/install.sh",
     "setup:adminer": "node scripts/download-adminer.js",
-    "adminer": "bash scripts/start-adminer.sh"
+    "adminer": "bash scripts/start-adminer.sh",
+    "update": "sudo bash scripts/update.sh"
   }
 }
