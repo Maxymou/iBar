@@ -647,7 +647,6 @@ cd backend && npm start
 ```
 ## License
 
-This project is licensed under the MIT License.
-See the LICENSE file for details.
+This project is licensed under the GNU Affero General Public License v3.0.
 
-Use of the hosted application is subject to the Terms of Use described in TERMS.md.
+See the LICENSE file for details.
