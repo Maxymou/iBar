@@ -181,21 +181,55 @@ const UserDrawer = ({ isOpen, onClose }) => {
                </button>
              }>
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
-          {[
-            { label: 'Mot de passe actuel', key: 'current' },
-            { label: 'Nouveau mot de passe', key: 'next' },
-            { label: 'Confirmer le nouveau mot de passe', key: 'confirm' },
-          ].map(field => (
-            <div key={field.key}>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">{field.label}</label>
-              <input type="password" value={pwForm[field.key]}
-                     onChange={e => setPwForm(p => ({ ...p, [field.key]: e.target.value }))}
-                     className="ios-input" />
-            </div>
-          ))}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe actuel</label>
+            <input type="password" value={pwForm.current}
+                   onChange={e => setPwForm(p => ({ ...p, current: e.target.value }))}
+                   className="ios-input" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nouveau mot de passe</label>
+            <input type="password" value={pwForm.next}
+                   onChange={e => setPwForm(p => ({ ...p, next: e.target.value }))}
+                   className="ios-input" />
+            {pwForm.next && <PasswordStrength password={pwForm.next} />}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le nouveau mot de passe</label>
+            <input type="password" value={pwForm.confirm}
+                   onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))}
+                   className="ios-input" />
+          </div>
         </form>
       </Modal>
     </>
+  );
+};
+
+const PasswordStrength = ({ password }) => {
+  const hasLength = password.length >= 8;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasDigit = /[0-9]/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+  let level, label, colorBar, colorText;
+  if (!hasLength) {
+    level = 0; label = 'Trop court'; colorBar = 'bg-red-500'; colorText = 'text-red-600';
+  } else if (hasUpper && (hasDigit || hasSpecial)) {
+    level = 2; label = 'Fort'; colorBar = 'bg-green-500'; colorText = 'text-green-600';
+  } else {
+    level = 1; label = 'Moyen'; colorBar = 'bg-orange-500'; colorText = 'text-orange-600';
+  }
+
+  return (
+    <div className="mt-1.5">
+      <div className="flex gap-1 h-1.5">
+        {[0, 1, 2].map(i => (
+          <div key={i} className={`flex-1 rounded-full ${i <= level ? colorBar : 'bg-gray-200 dark:bg-gray-700'}`} />
+        ))}
+      </div>
+      <p className={`text-xs mt-1 font-medium ${colorText}`}>{label}</p>
+    </div>
   );
 };
 

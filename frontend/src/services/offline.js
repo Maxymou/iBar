@@ -39,6 +39,8 @@ export const getCachedData = async (storeName) => {
 };
 
 // Add to sync queue (for offline operations)
+// TODO: La synchronisation vers le serveur (POST vers /api/sync) n'est pas encore implémentée.
+// Les items sont stockés localement dans IndexedDB mais ne sont jamais envoyés au backend.
 export const addToSyncQueue = async (item) => {
   const db = await getDB();
   return db.add('syncQueue', { ...item, createdAt: Date.now() });

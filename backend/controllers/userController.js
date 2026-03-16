@@ -1,6 +1,6 @@
 const path = require('path');
 const db = require('../models/db');
-const { compressImage, deleteImage } = require('../services/imageService');
+const { compressAvatar, deleteImage } = require('../services/imageService');
 
 const updateProfile = async (req, res) => {
   const { name, email } = req.body;
@@ -19,7 +19,7 @@ const updateProfile = async (req, res) => {
 
     let avatar_url = undefined;
     if (req.file) {
-      await compressImage(req.file.path, { width: 400, quality: 85 });
+      await compressAvatar(req.file.path);
       const current = await db.query('SELECT avatar_url FROM users WHERE id = $1', [userId]);
       if (current.rows[0]?.avatar_url) {
         deleteImage(path.basename(current.rows[0].avatar_url));

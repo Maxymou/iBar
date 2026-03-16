@@ -128,10 +128,13 @@ const update = async (req, res) => {
 
   try {
     const existing = await db.query(
-      'SELECT photo_url, name FROM cafes WHERE id = $1 AND is_archived = false', [id]
+      'SELECT photo_url, name, created_by FROM cafes WHERE id = $1 AND is_archived = false', [id]
     );
     if (existing.rows.length === 0) {
       return res.status(404).json({ error: 'Café introuvable' });
+    }
+    if (existing.rows[0].created_by !== req.user.id) {
+      return res.status(403).json({ error: 'Non autorisé' });
     }
 
     let photo_url = existing.rows[0].photo_url;
@@ -174,14 +177,20 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
   try {
-    const result = await db.query(
-      `UPDATE cafes SET is_archived = true, updated_at = NOW()
-       WHERE id = $1 AND is_archived = false RETURNING id`,
-      [req.params.id]
+    const existing = await db.query(
+      'SELECT created_by FROM cafes WHERE id = $1 AND is_archived = false', [req.params.id]
     );
-    if (result.rows.length === 0) {
+    if (existing.rows.length === 0) {
       return res.status(404).json({ error: 'Café introuvable' });
     }
+    if (existing.rows[0].created_by !== req.user.id) {
+      return res.status(403).json({ error: 'Non autorisé' });
+    }
+
+    await db.query(
+      `UPDATE cafes SET is_archived = true, updated_at = NOW() WHERE id = $1`,
+      [req.params.id]
+    );
     res.json({ message: 'Café supprimé avec succès' });
   } catch (err) {
     console.error('Cafe remove error:', err);

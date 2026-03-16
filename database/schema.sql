@@ -116,7 +116,11 @@ CREATE INDEX IF NOT EXISTS idx_cafes_rating ON cafes (rating DESC)
   WHERE is_archived = FALSE;
 
 -- ============================================================
--- OFFLINE SYNC QUEUE (for tracking pending syncs)
+-- OFFLINE SYNC QUEUE
+-- NOTE: Cette table est réservée pour une future implémentation
+-- de synchronisation serveur. Actuellement la gestion offline
+-- utilise IndexedDB côté client (frontend/src/services/offline.js).
+-- La sync vers le serveur n'est pas encore implémentée.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sync_queue (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
