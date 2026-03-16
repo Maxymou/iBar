@@ -1,7 +1,13 @@
 -- Migration: Create unified places table for map-first architecture
 -- Run this after schema.sql
+--
+-- Required extensions: postgis, pg_trgm, uuid-ossp
 
--- PostGIS extension for geography type
+-- ============================================================
+-- EXTENSIONS
+-- ============================================================
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- ============================================================
@@ -45,7 +51,7 @@ ON places USING GIST (geom);
 CREATE INDEX IF NOT EXISTS idx_places_category
 ON places (category);
 
--- Text search indexes
+-- Text search indexes (requires pg_trgm)
 CREATE INDEX IF NOT EXISTS idx_places_name_trgm
 ON places USING GIN (name gin_trgm_ops);
 
@@ -70,3 +76,19 @@ CREATE TRIGGER trg_places_geom
 BEFORE INSERT OR UPDATE OF lat, lng ON places
 FOR EACH ROW
 EXECUTE FUNCTION places_update_geom();
+
+-- ============================================================
+-- GEOCODE CACHE (reverse geocoding results)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS geocode_cache (
+    id SERIAL PRIMARY KEY,
+    lat_rounded DOUBLE PRECISION NOT NULL,
+    lng_rounded DOUBLE PRECISION NOT NULL,
+    address TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_used_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(lat_rounded, lng_rounded)
+);
+
+CREATE INDEX IF NOT EXISTS idx_geocode_cache_coords
+ON geocode_cache (lat_rounded, lng_rounded);

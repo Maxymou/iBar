@@ -34,15 +34,10 @@ fs.mkdirSync(path.join(__dirname, 'uploads'), { recursive: true });
 fs.mkdirSync(path.join(__dirname, '../logs'), { recursive: true });
 
 const authRoutes = require('./routes/auth');
-const restaurantRoutes = require('./routes/restaurants');
-const accommodationRoutes = require('./routes/accommodations');
-const cafeRoutes = require('./routes/cafes');
 const placesRoutes = require('./routes/places');
 const geocodeRoutes = require('./routes/geocode');
 const googleImportRoutes = require('./routes/googleImport');
 const userRoutes = require('./routes/users');
-const exportRoutes = require('./routes/export');
-const syncRoutes = require('./routes/sync');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -115,15 +110,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/restaurants', restaurantRoutes);
-app.use('/api/accommodations', accommodationRoutes);
-app.use('/api/cafes', cafeRoutes);
 app.use('/api/places/import-google', googleImportRoutes);
 app.use('/api/places', placesRoutes);
 app.use('/api/geocode', geocodeRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/export', exportRoutes);
-app.use('/api/sync', syncRoutes);
 
 // Health check (used by install.sh and monitoring)
 app.get('/api/health', (req, res) => {

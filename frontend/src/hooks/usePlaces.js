@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import api from '../services/api';
-import { cacheData, getCachedData } from '../services/offline';
+import { cachePlaces, getCachedPlaces } from '../services/offline';
 
 const usePlaces = () => {
   const [places, setPlaces] = useState([]);
@@ -30,13 +30,13 @@ const usePlaces = () => {
       const res = await api.get(`/places?${params}`, { signal: controller.signal });
       const data = res.data.data || [];
       setPlaces(data);
-      cacheData('places', data).catch(() => {});
+      cachePlaces(data, category).catch(() => {});
       return data;
     } catch (err) {
       if (err.name === 'CanceledError' || err.name === 'AbortError') return;
 
       if (!navigator.onLine) {
-        const cached = await getCachedData('places');
+        const cached = await getCachedPlaces(category);
         if (cached && cached.length > 0) {
           setPlaces(cached);
           return cached;

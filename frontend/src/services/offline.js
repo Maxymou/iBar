@@ -2,22 +2,21 @@ import { openDB } from 'idb';
 import api from './api';
 
 const DB_NAME = 'ibar-offline';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
+const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24h
 
 const getDB = () =>
   openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      // Legacy stores (kept for backward compatibility during migration)
-      if (!db.objectStoreNames.contains('restaurants')) {
-        db.createObjectStore('restaurants', { keyPath: 'id' });
+    upgrade(db, oldVersion) {
+      // Remove legacy stores from previous versions
+      if (oldVersion < 4) {
+        for (const name of ['restaurants', 'accommodations', 'cafes']) {
+          if (db.objectStoreNames.contains(name)) {
+            db.deleteObjectStore(name);
+          }
+        }
       }
-      if (!db.objectStoreNames.contains('accommodations')) {
-        db.createObjectStore('accommodations', { keyPath: 'id' });
-      }
-      if (!db.objectStoreNames.contains('cafes')) {
-        db.createObjectStore('cafes', { keyPath: 'id' });
-      }
-      // New unified places store
+      // Unified places store
       if (!db.objectStoreNames.contains('places')) {
         db.createObjectStore('places', { keyPath: 'id' });
       }
@@ -28,22 +27,71 @@ const getDB = () =>
     },
   });
 
-// Cache data for offline use
-export const cacheData = async (storeName, data) => {
+/**
+ * Cache places with timestamp and category metadata.
+ * Upserts by id — naturally deduplicates across fetches.
+ */
+export const cachePlaces = async (data, category) => {
+  if (!data || data.length === 0) return;
   const db = await getDB();
-  if (!db.objectStoreNames.contains(storeName)) return;
-  const tx = db.transaction(storeName, 'readwrite');
+  const tx = db.transaction('places', 'readwrite');
+  const now = Date.now();
   await Promise.all([
-    ...data.map(item => tx.store.put(item)),
+    ...data.map(item => tx.store.put({
+      ...item,
+      _cachedAt: now,
+      _category: item.category || category || 'unknown',
+    })),
     tx.done,
   ]);
 };
 
-// Get cached data
-export const getCachedData = async (storeName) => {
+/**
+ * Get cached places, optionally filtered by category.
+ * Returns only items cached within the last 24h.
+ */
+export const getCachedPlaces = async (category) => {
   const db = await getDB();
-  if (!db.objectStoreNames.contains(storeName)) return [];
-  return db.getAll(storeName);
+  const all = await db.getAll('places');
+  const cutoff = Date.now() - CACHE_MAX_AGE_MS;
+
+  return all.filter(item => {
+    if (item._cachedAt && item._cachedAt < cutoff) return false;
+    if (category && item._category !== category) return false;
+    return true;
+  });
+};
+
+/**
+ * Remove stale cached places (older than 24h).
+ */
+export const clearOldPlaces = async () => {
+  const db = await getDB();
+  const tx = db.transaction('places', 'readwrite');
+  const all = await tx.store.getAll();
+  const cutoff = Date.now() - CACHE_MAX_AGE_MS;
+
+  await Promise.all([
+    ...all
+      .filter(item => item._cachedAt && item._cachedAt < cutoff)
+      .map(item => tx.store.delete(item.id)),
+    tx.done,
+  ]);
+};
+
+// Legacy-compatible exports for any remaining callers
+export const cacheData = async (storeName, data) => {
+  if (storeName === 'places') {
+    return cachePlaces(data);
+  }
+  // Ignore legacy store names silently
+};
+
+export const getCachedData = async (storeName) => {
+  if (storeName === 'places') {
+    return getCachedPlaces();
+  }
+  return [];
 };
 
 // Add to sync queue (for offline operations)
@@ -101,11 +149,12 @@ export const syncPendingActions = async () => {
   }
 };
 
-// Register online listener for auto-sync
+// Register online listener for auto-sync + cache cleanup
 if (typeof window !== 'undefined') {
   window.addEventListener('online', () => {
     syncPendingActions().catch(err =>
       console.error('Auto-sync failed:', err)
     );
+    clearOldPlaces().catch(() => {});
   });
 }

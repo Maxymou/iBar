@@ -31,16 +31,16 @@ const getAll = async (req, res) => {
     paramIdx++;
   }
 
-  // Bounding box filter: bbox=south,west,north,east
+  // Bounding box filter using PostGIS: bbox=south,west,north,east
   if (bbox) {
     const [south, west, north, east] = bbox.split(',').map(Number);
     if ([south, west, north, east].every(n => !isNaN(n))) {
-      conditions.push(`p.lat BETWEEN $${paramIdx} AND $${paramIdx + 1}`);
-      params.push(south, north);
-      paramIdx += 2;
-      conditions.push(`p.lng BETWEEN $${paramIdx} AND $${paramIdx + 1}`);
-      params.push(west, east);
-      paramIdx += 2;
+      // ST_MakeEnvelope(xmin, ymin, xmax, ymax, srid) = (west, south, east, north)
+      conditions.push(
+        `ST_Intersects(p.geom, ST_MakeEnvelope($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}, 4326)::geography)`
+      );
+      params.push(west, south, east, north);
+      paramIdx += 4;
     }
   }
 
