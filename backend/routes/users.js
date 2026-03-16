@@ -1,9 +1,17 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const { authenticate } = require('../middleware/auth');
 const { upload } = require('../middleware/upload');
 const { updateProfile } = require('../controllers/userController');
 
-router.put('/profile', authenticate, upload.single('avatar'), updateProfile);
+const handleUploadError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError || err.message === 'Format de fichier non supporté. Utilisez JPEG, PNG, WebP ou GIF.') {
+    return res.status(400).json({ error: err.message });
+  }
+  next(err);
+};
+
+router.put('/profile', authenticate, upload.single('avatar'), handleUploadError, updateProfile);
 
 module.exports = router;
