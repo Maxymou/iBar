@@ -2,8 +2,6 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const db = require('../models/db');
 const { compressImage, deleteImage } = require('../services/imageService');
-const { haversineSQL } = require('../utils/geoUtils');
-
 const VALID_CATEGORIES = ['cafe', 'restaurant', 'hotel'];
 const MAX_LIMIT = 500;
 
@@ -48,11 +46,15 @@ const getAll = async (req, res) => {
   if (sort === 'rating') {
     orderBy = 'p.rating DESC NULLS LAST';
   } else if (sort === 'distance' && lat && lng) {
-    const geo = haversineSQL('p', paramIdx, lat, lng);
-    distanceSelect = geo.select;
-    orderBy = geo.orderBy;
-    params.push(...geo.params);
-    paramIdx = geo.nextIdx;
+    const userLat = parseFloat(lat);
+    const userLng = parseFloat(lng);
+    if (!isNaN(userLat) && !isNaN(userLng)) {
+      // ST_MakePoint takes (lng, lat); ST_Distance returns meters on geography type
+      distanceSelect = `ST_Distance(p.geom, ST_SetSRID(ST_MakePoint($${paramIdx}, $${paramIdx + 1}), 4326)::geography) / 1000.0 AS distance`;
+      orderBy = 'distance ASC NULLS LAST';
+      params.push(userLng, userLat);
+      paramIdx += 2;
+    }
   }
 
   params.push(safeLimit);
