@@ -645,3 +645,9 @@ sudo systemctl restart ibar
 # Ou en mode manuel :
 cd backend && npm start
 ```
+## License
+
+This project is licensed under the MIT License.
+See the LICENSE file for details.
+
+Use of the hosted application is subject to the Terms of Use described in TERMS.md.
