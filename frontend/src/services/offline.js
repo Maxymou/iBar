@@ -2,11 +2,12 @@ import { openDB } from 'idb';
 import api from './api';
 
 const DB_NAME = 'ibar-offline';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 const getDB = () =>
   openDB(DB_NAME, DB_VERSION, {
     upgrade(db) {
+      // Legacy stores (kept for backward compatibility during migration)
       if (!db.objectStoreNames.contains('restaurants')) {
         db.createObjectStore('restaurants', { keyPath: 'id' });
       }
@@ -15,6 +16,10 @@ const getDB = () =>
       }
       if (!db.objectStoreNames.contains('cafes')) {
         db.createObjectStore('cafes', { keyPath: 'id' });
+      }
+      // New unified places store
+      if (!db.objectStoreNames.contains('places')) {
+        db.createObjectStore('places', { keyPath: 'id' });
       }
       if (!db.objectStoreNames.contains('syncQueue')) {
         const store = db.createObjectStore('syncQueue', { keyPath: 'id', autoIncrement: true });
@@ -26,6 +31,7 @@ const getDB = () =>
 // Cache data for offline use
 export const cacheData = async (storeName, data) => {
   const db = await getDB();
+  if (!db.objectStoreNames.contains(storeName)) return;
   const tx = db.transaction(storeName, 'readwrite');
   await Promise.all([
     ...data.map(item => tx.store.put(item)),
@@ -36,6 +42,7 @@ export const cacheData = async (storeName, data) => {
 // Get cached data
 export const getCachedData = async (storeName) => {
   const db = await getDB();
+  if (!db.objectStoreNames.contains(storeName)) return [];
   return db.getAll(storeName);
 };
 
