@@ -4,7 +4,7 @@ import { useAuth } from '../../store/AuthContext';
 import { useToast } from '../ui/Toast';
 
 const RegisterPage = () => {
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
+  const [form, setForm] = useState({ name: '', email: '', confirmEmail: '', password: '', confirm: '' });
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const { toast } = useToast();
@@ -14,6 +14,10 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.email !== form.confirmEmail) {
+      toast('Les adresses email ne correspondent pas', 'error');
+      return;
+    }
     if (form.password !== form.confirm) {
       toast('Les mots de passe ne correspondent pas', 'error');
       return;
@@ -56,6 +60,12 @@ const RegisterPage = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Email</label>
             <input type="email" value={form.email} onChange={set('email')}
+                   placeholder="votre@email.com" required autoComplete="email" className="ios-input" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Confirmer l'email</label>
+            <input type="email" value={form.confirmEmail} onChange={set('confirmEmail')}
                    placeholder="votre@email.com" required autoComplete="email" className="ios-input" />
           </div>
 

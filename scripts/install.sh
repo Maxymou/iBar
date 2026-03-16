@@ -205,14 +205,14 @@ Générez un secret : openssl rand -hex 32"
   # ── Dépendances npm + build ──────────────────────────────────────────────
   section "Dépendances backend (production)"
   cd "$PROJECT_DIR/backend"
-  npm install --omit=dev --no-audit --no-fund
+  sudo -u "$CURRENT_USER" npm install --omit=dev --no-audit --no-fund
   log "Dépendances backend installées ✓"
 
   section "Dépendances frontend + build"
   cd "$PROJECT_DIR/frontend"
-  npm install --include=dev --no-audit --no-fund
+  sudo -u "$CURRENT_USER" npm install --include=dev --no-audit --no-fund
   log "Dépendances frontend installées ✓"
-  npm run build
+  sudo -u "$CURRENT_USER" npm run build
   if [ ! -f "$PROJECT_DIR/frontend/dist/index.html" ]; then
     err "Le build frontend a échoué : frontend/dist/index.html introuvable.
 Relancez manuellement pour voir l'erreur :
@@ -225,6 +225,9 @@ Relancez manuellement pour voir l'erreur :
     chown -R "$CURRENT_USER:$CURRENT_USER" \
       "$PROJECT_DIR/logs" \
       "$PROJECT_DIR/backend/uploads" 2>/dev/null || true
+    chown -R "$CURRENT_USER:$CURRENT_USER" "$PROJECT_DIR/frontend/dist" 2>/dev/null || true
+    chown -R "$CURRENT_USER:$CURRENT_USER" "$PROJECT_DIR/frontend/node_modules" 2>/dev/null || true
+    chown -R "$CURRENT_USER:$CURRENT_USER" "$PROJECT_DIR/backend/node_modules" 2>/dev/null || true
   fi
 
   # ── Services systemd ─────────────────────────────────────────────────────
@@ -276,6 +279,14 @@ EOF
   sudo systemctl daemon-reload
   sudo systemctl enable ibar ibar-adminer
   log "Services systemd créés et activés au démarrage ✓"
+
+  # ── Arrêt des anciens processus ──────────────────────────────────────────
+  section "Arrêt des anciens processus"
+  sudo systemctl stop ibar ibar-adminer 2>/dev/null || true
+  pkill -f "node server.js" 2>/dev/null || true
+  pkill -f "ibar-adminer.php" 2>/dev/null || true
+  sleep 2
+  log "Anciens processus arrêtés ✓"
 
   # ── Démarrage des services ───────────────────────────────────────────────
   section "Démarrage des services"

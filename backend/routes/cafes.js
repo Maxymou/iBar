@@ -3,8 +3,8 @@ const router = express.Router();
 const multer = require('multer');
 const { body, validationResult } = require('express-validator');
 const { authenticate } = require('../middleware/auth');
-const { upload } = require('../middleware/upload');
-const { getAll, getOne, create, update, remove } = require('../controllers/cafeController');
+const { upload, validateMagicBytes } = require('../middleware/upload');
+const { getAll, getOne, create, update, remove, getArchived, restore } = require('../controllers/cafeController');
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -31,9 +31,11 @@ const handleUploadError = (err, req, res, next) => {
 };
 
 router.get('/', authenticate, getAll);
+router.get('/archived', authenticate, getArchived);
 router.get('/:id', authenticate, getOne);
-router.post('/', authenticate, upload.single('photo'), handleUploadError, cafeValidation, validate, create);
-router.put('/:id', authenticate, upload.single('photo'), handleUploadError, cafeValidation, validate, update);
+router.put('/:id/restore', authenticate, restore);
+router.post('/', authenticate, upload.single('photo'), handleUploadError, validateMagicBytes, cafeValidation, validate, create);
+router.put('/:id', authenticate, upload.single('photo'), handleUploadError, validateMagicBytes, cafeValidation, validate, update);
 router.delete('/:id', authenticate, remove);
 
 module.exports = router;

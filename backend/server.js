@@ -39,6 +39,7 @@ const accommodationRoutes = require('./routes/accommodations');
 const cafeRoutes = require('./routes/cafes');
 const userRoutes = require('./routes/users');
 const exportRoutes = require('./routes/export');
+const syncRoutes = require('./routes/sync');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -116,6 +117,7 @@ app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/cafes', cafeRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/export', exportRoutes);
+app.use('/api/sync', syncRoutes);
 
 // Health check (used by install.sh and monitoring)
 app.get('/api/health', (req, res) => {

@@ -6,7 +6,7 @@ const { authenticate } = require('../middleware/auth');
 
 router.post('/register', [
   body('name').trim().notEmpty().withMessage('Le nom est obligatoire'),
-  body('email').isEmail().withMessage('Email invalide'),
+  body('email').isEmail().withMessage('Email invalide').normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères'),
 ], register);
 

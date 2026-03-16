@@ -12,11 +12,23 @@ const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
+  console.error('PostgreSQL pool error:', err.message);
 });
 
+const query = async (text, params, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await pool.query(text, params);
+    } catch (err) {
+      if (i === retries - 1 || !err.message.includes('connect')) throw err;
+      console.warn(`DB query retry ${i + 1}/${retries} after connection error`);
+      await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)));
+    }
+  }
+};
+
 module.exports = {
-  query: (text, params) => pool.query(text, params),
+  query,
   getClient: () => pool.connect(),
   pool,
 };
