@@ -36,6 +36,7 @@ fs.mkdirSync(path.join(__dirname, '../logs'), { recursive: true });
 const authRoutes = require('./routes/auth');
 const restaurantRoutes = require('./routes/restaurants');
 const accommodationRoutes = require('./routes/accommodations');
+const cafeRoutes = require('./routes/cafes');
 const userRoutes = require('./routes/users');
 const exportRoutes = require('./routes/export');
 
@@ -102,6 +103,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/accommodations', accommodationRoutes);
+app.use('/api/cafes', cafeRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/export', exportRoutes);
 

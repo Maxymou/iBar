@@ -85,6 +85,37 @@ CREATE INDEX IF NOT EXISTS idx_accommodations_rating ON accommodations (rating D
   WHERE is_archived = FALSE;
 
 -- ============================================================
+-- CAFES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS cafes (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name          VARCHAR(255) NOT NULL,
+  photo_url     TEXT,
+  phone         VARCHAR(50),
+  address       TEXT,
+  specialty     VARCHAR(100),
+  has_food      BOOLEAN NOT NULL DEFAULT FALSE,
+  rating        NUMERIC(3,1) CHECK (rating >= 0 AND rating <= 5),
+  comment       TEXT,
+  visit_date    DATE,
+  latitude      DOUBLE PRECISION,
+  longitude     DOUBLE PRECISION,
+  is_archived   BOOLEAN NOT NULL DEFAULT FALSE,
+  created_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+  updated_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_cafes_archived ON cafes (is_archived);
+CREATE INDEX IF NOT EXISTS idx_cafes_name_trgm ON cafes USING GIN (name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_cafes_address_trgm ON cafes USING GIN (address gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_cafes_location ON cafes (latitude, longitude)
+  WHERE latitude IS NOT NULL AND longitude IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_cafes_rating ON cafes (rating DESC)
+  WHERE is_archived = FALSE;
+
+-- ============================================================
 -- OFFLINE SYNC QUEUE (for tracking pending syncs)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sync_queue (

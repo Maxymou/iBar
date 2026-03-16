@@ -1,7 +1,7 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'ibar-offline';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 const getDB = () =>
   openDB(DB_NAME, DB_VERSION, {
@@ -11,6 +11,9 @@ const getDB = () =>
       }
       if (!db.objectStoreNames.contains('accommodations')) {
         db.createObjectStore('accommodations', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('cafes')) {
+        db.createObjectStore('cafes', { keyPath: 'id' });
       }
       if (!db.objectStoreNames.contains('syncQueue')) {
         const store = db.createObjectStore('syncQueue', { keyPath: 'id', autoIncrement: true });

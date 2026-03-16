@@ -49,6 +49,19 @@ const accommodationIcon = new L.Icon({
   popupAnchor: [0, -48],
 });
 
+const cafeIcon = new L.Icon({
+  iconUrl: 'data:image/svg+xml,' + encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 48" width="40" height="48">
+      <ellipse cx="20" cy="44" rx="8" ry="4" fill="rgba(0,0,0,0.2)"/>
+      <path d="M20 0 C9 0 0 9 0 20 C0 32 20 48 20 48 C20 48 40 32 40 20 C40 9 31 0 20 0Z" fill="#d97706"/>
+      <text x="20" y="26" font-size="16" text-anchor="middle" fill="white">☕</text>
+    </svg>
+  `),
+  iconSize: [40, 48],
+  iconAnchor: [20, 48],
+  popupAnchor: [0, -48],
+});
+
 // Only recenters when recenterTrigger changes (explicit user request), not on every location update
 const RecenterMap = ({ center, trigger }) => {
   const map = useMap();
@@ -69,7 +82,9 @@ const MapView = ({ items, userLocation, type, onView, recenterTrigger }) => {
     ? [userLocation.lat, userLocation.lng]
     : [48.8566, 2.3522]; // Paris
 
-  const icon = type === 'restaurants' ? restaurantIcon : accommodationIcon;
+  const icon = type === 'restaurants' ? restaurantIcon
+    : type === 'cafes' ? cafeIcon
+    : accommodationIcon;
 
   return (
     <MapContainer

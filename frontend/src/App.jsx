@@ -12,6 +12,8 @@ const RestaurantsPage    = lazy(() => import('./components/restaurants/Restauran
 const RestaurantDetail   = lazy(() => import('./components/restaurants/RestaurantDetail'));
 const AccommodationsPage = lazy(() => import('./components/accommodations/AccommodationsPage'));
 const AccommodationDetail = lazy(() => import('./components/accommodations/AccommodationDetail'));
+const CafesPage          = lazy(() => import('./components/cafes/CafesPage'));
+const CafeDetail         = lazy(() => import('./components/cafes/CafeDetail'));
 
 const PageSpinner = () => (
   <div className="flex items-center justify-center h-full">
@@ -27,7 +29,8 @@ const AppLayout = () => {
 
   // Hide bottom nav on detail pages
   const isDetailPage = location.pathname.includes('/restaurants/') ||
-                       location.pathname.includes('/hebergements/');
+                       location.pathname.includes('/hebergements/') ||
+                       location.pathname.includes('/cafes/');
 
   if (!user) return <Navigate to="/login" replace />;
 
@@ -70,6 +73,8 @@ const AppLayout = () => {
             <Route path="/restaurants/:id" element={<RestaurantDetail />} />
             <Route path="/hebergements" element={<AccommodationsPage />} />
             <Route path="/hebergements/:id" element={<AccommodationDetail />} />
+            <Route path="/cafes" element={<CafesPage />} />
+            <Route path="/cafes/:id" element={<CafeDetail />} />
           </Routes>
         </Suspense>
       </main>
@@ -78,6 +83,7 @@ const AppLayout = () => {
       {!isDetailPage && (
         <nav className="bottom-nav">
           <div className="bottom-nav-inner">
+            <TabItem to="/cafes" icon="☕" label="Cafés" />
             <TabItem to="/restaurants" icon="🍽️" label="Restaurants" />
             <TabItem to="/hebergements" icon="🏨" label="Hébergements" />
           </div>
@@ -94,7 +100,7 @@ const TabItem = ({ to, icon, label }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
-      `flex flex-col items-center gap-0.5 px-6 py-1.5 rounded-xl transition-all
+      `flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all
        ${isActive ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/30' : 'text-gray-400 dark:text-gray-500'}`
     }
   >
