@@ -42,4 +42,24 @@ const exportAccommodations = async () => {
   return parser.parse(result.rows);
 };
 
-module.exports = { exportRestaurants, exportAccommodations };
+const exportCafes = async () => {
+  const result = await db.query(`
+    SELECT c.id, c.name, c.phone, c.address, c.specialty, c.has_food,
+           c.rating, c.comment, c.visit_date, c.latitude, c.longitude,
+           u1.name as created_by, u2.name as updated_by,
+           c.created_at, c.updated_at
+    FROM cafes c
+    LEFT JOIN users u1 ON c.created_by = u1.id
+    LEFT JOIN users u2 ON c.updated_by = u2.id
+    WHERE c.is_archived = false
+    ORDER BY c.name
+  `);
+
+  const fields = ['id','name','phone','address','specialty','has_food','rating',
+    'comment','visit_date','latitude','longitude','created_by','updated_by',
+    'created_at','updated_at'];
+  const parser = new Parser({ fields });
+  return parser.parse(result.rows);
+};
+
+module.exports = { exportRestaurants, exportAccommodations, exportCafes };
