@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './store/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import { ThemeProvider } from './store/ThemeContext';
@@ -7,13 +7,9 @@ import { ThemeProvider } from './store/ThemeContext';
 import LoginPage from './components/user/LoginPage';
 import RegisterPage from './components/user/RegisterPage';
 import UserDrawer from './components/user/UserDrawer';
+import ExplorePage from './components/explore/ExplorePage';
 
-const RestaurantsPage    = lazy(() => import('./components/restaurants/RestaurantsPage'));
-const RestaurantDetail   = lazy(() => import('./components/restaurants/RestaurantDetail'));
-const AccommodationsPage = lazy(() => import('./components/accommodations/AccommodationsPage'));
-const AccommodationDetail = lazy(() => import('./components/accommodations/AccommodationDetail'));
-const CafesPage          = lazy(() => import('./components/cafes/CafesPage'));
-const CafeDetail         = lazy(() => import('./components/cafes/CafeDetail'));
+const PlaceDetailPage = lazy(() => import('./components/explore/PlaceDetailPage'));
 
 const PageSpinner = () => (
   <div className="flex items-center justify-center h-full">
@@ -21,93 +17,25 @@ const PageSpinner = () => (
   </div>
 );
 
-// Protected layout with header + bottom nav
+// Map-first layout: full screen map with overlays
 const AppLayout = () => {
   const { user } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const location = useLocation();
-
-  // Hide bottom nav on detail pages
-  const isDetailPage = location.pathname.includes('/restaurants/') ||
-                       location.pathname.includes('/hebergements/') ||
-                       location.pathname.includes('/cafes/');
 
   if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-gray-50 dark:bg-gray-900">
-      {/* Top Header */}
-      {!isDetailPage && (
-        <header className="top-header flex-shrink-0">
-          {/* Avatar / Drawer toggle */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden"
-          >
-            {user.avatar_url ? (
-              <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-primary-700 font-bold text-lg">
-                {user.name?.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </button>
-
-          {/* App title */}
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🍸</span>
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white">IBar</h1>
-          </div>
-
-          {/* Placeholder for balance */}
-          <div className="w-10" />
-        </header>
-      )}
-
-      {/* Main Content */}
-      <main className="flex-1 min-h-0 overflow-hidden">
-        <Suspense fallback={<PageSpinner />}>
-          <Routes>
-            <Route path="/" element={<Navigate to="/restaurants" replace />} />
-            <Route path="/restaurants" element={<RestaurantsPage />} />
-            <Route path="/restaurants/:id" element={<RestaurantDetail />} />
-            <Route path="/hebergements" element={<AccommodationsPage />} />
-            <Route path="/hebergements/:id" element={<AccommodationDetail />} />
-            <Route path="/cafes" element={<CafesPage />} />
-            <Route path="/cafes/:id" element={<CafeDetail />} />
-          </Routes>
-        </Suspense>
-      </main>
-
-      {/* Bottom Navigation */}
-      {!isDetailPage && (
-        <nav className="bottom-nav">
-          <div className="bottom-nav-inner">
-            <TabItem to="/cafes" icon="☕" label="Cafés" />
-            <TabItem to="/restaurants" icon="🍽️" label="Restaurants" />
-            <TabItem to="/hebergements" icon="🏨" label="Hébergements" />
-          </div>
-        </nav>
-      )}
-
-      {/* User Drawer */}
+    <div className="h-full w-full overflow-hidden bg-gray-50 dark:bg-gray-900">
+      <Suspense fallback={<PageSpinner />}>
+        <Routes>
+          <Route path="/places/:id" element={<PlaceDetailPage />} />
+          <Route path="*" element={<ExplorePage onUserClick={() => setDrawerOpen(true)} />} />
+        </Routes>
+      </Suspense>
       <UserDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </div>
   );
 };
-
-const TabItem = ({ to, icon, label }) => (
-  <NavLink
-    to={to}
-    className={({ isActive }) =>
-      `flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all
-       ${isActive ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/30' : 'text-gray-400 dark:text-gray-500'}`
-    }
-  >
-    <span className="text-xl">{icon}</span>
-    <span className="text-xs font-medium">{label}</span>
-  </NavLink>
-);
 
 const App = () => (
   <ThemeProvider>
