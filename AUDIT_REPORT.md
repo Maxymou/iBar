@@ -41,7 +41,13 @@
 
 **Correction** : Déplacement de la définition de `PublicRoute` avant le composant `App`.
 
-### 6. DOCUMENTATION — Fichiers de migration sans contexte
+### 6. CRITIQUE — Pattern de cache PWA obsolète dans vite.config.js
+
+**Problème** : Dans `frontend/vite.config.js`, le `runtimeCaching` du service worker utilisait le pattern `/\/api\/(restaurants|accommodations)/` — les anciens noms de tables. L'API utilise maintenant `/api/places`. Le cache PWA offline pour les données API ne fonctionnait jamais.
+
+**Correction** : Mise à jour du pattern vers `/\/api\/places/`.
+
+### 7. DOCUMENTATION — Fichiers de migration sans contexte
 
 **Problème** : Les fichiers de migration ne précisaient pas leur rôle par rapport à `schema.sql` ni quand les utiliser.
 
