@@ -66,7 +66,7 @@ const PlaceDetailPage = () => {
     <div className="h-full bg-gray-50 dark:bg-gray-900 overflow-y-auto">
       {/* Back button */}
       <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700"
-           style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+           style={{ paddingTop: 'var(--sat)' }}>
         <div className="flex items-center gap-3 px-4 py-3">
           <button
             onClick={() => navigate('/')}

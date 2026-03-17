@@ -25,8 +25,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-primary-700 to-primary-900 flex flex-col items-center justify-center p-6"
-         style={{ minHeight: '100dvh', paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+    <div className="bg-gradient-to-br from-primary-700 to-primary-900 flex flex-col items-center justify-center p-6 page-full-safe">
       {/* Logo */}
       <div className="mb-8 text-center">
         <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-ios-lg">

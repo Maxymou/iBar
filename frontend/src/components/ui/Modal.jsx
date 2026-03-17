@@ -49,7 +49,7 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
         {/* Footer */}
         {footer && (
           <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-700"
-               style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+               style={{ paddingBottom: 'max(1rem, var(--sab))' }}>
             {footer}
           </div>
         )}

@@ -89,7 +89,7 @@ const UserDrawer = ({ isOpen, onClose }) => {
           {/* Drawer */}
           <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white dark:bg-gray-900 shadow-ios-lg
                           animate-slide-in-left flex flex-col"
-               style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+               style={{ paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)' }}>
 
             {/* Header */}
             <div className="bg-gradient-to-br from-primary-600 to-primary-800 px-5 pt-8 pb-6">
