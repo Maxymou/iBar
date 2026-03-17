@@ -1,6 +1,6 @@
 const ExploreFloatingActions = ({ onGpsClick, onAddClick, gpsLoading }) => {
   return (
-    <div className="absolute right-4 z-[500] pointer-events-none flex flex-col gap-3"
+    <div className="absolute right-4 z-[10] pointer-events-none flex flex-col gap-3"
          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}>
       {/* GPS button */}
       <button
