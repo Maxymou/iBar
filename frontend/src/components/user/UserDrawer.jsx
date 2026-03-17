@@ -83,7 +83,7 @@ const UserDrawer = ({ isOpen, onClose }) => {
     <>
       {/* Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-[150]">
+        <div className="fixed inset-0 z-drawer">
           <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
 
           {/* Drawer */}

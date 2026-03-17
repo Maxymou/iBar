@@ -1,6 +1,6 @@
 const ExploreFloatingActions = ({ onGpsClick, onAddClick, gpsLoading }) => {
   return (
-    <div className="absolute right-4 z-[10] pointer-events-none flex flex-col gap-3 explore-fabs">
+    <div className="absolute right-4 z-ui pointer-events-none flex flex-col gap-3 explore-fabs">
       {/* GPS button */}
       <button
         onClick={onGpsClick}

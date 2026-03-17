@@ -19,14 +19,16 @@
      z-0   : leaflet-container  (map, crée son propre stacking context)
      z-10  : TopBar, CategoryPill, FloatingActions  (au-dessus de la carte)
      z-20  : ExploreListOverlay, PlaceDetailOverlay (sheets au-dessus de l'UI)
-     z-100 : UserDrawer         (drawer, au-dessus des sheets)
-     z-200 : Modal              (modal, au-dessus de tout)
+     z-150 : UserDrawer         (drawer, au-dessus des sheets)
+     z-200 : Modal              (modal, au-dessus du drawer)
+     z-300 : Toast              (notifications, toujours au-dessus de tout)
      ─────────────────────────────────────────────────────────────────────── */
-  --z-map:    0;
-  --z-ui:    10;
-  --z-sheet: 20;
-  --z-drawer: 100;
+  --z-map:     0;
+  --z-ui:     10;
+  --z-sheet:  20;
+  --z-drawer: 150;
   --z-modal:  200;
+  --z-toast:  300;
 }
 
 /* ─── Standalone PWA: position:fixed anchors to the physical viewport with
@@ -111,6 +113,20 @@ body {
 .explore-fabs {
   bottom: var(--fabs-bottom);
 }
+
+/* Top bar container — absolute top-0, padding pushes content below status bar */
+.explore-top-bar {
+  padding-top: var(--sat);
+}
+
+/* ─── Semantic z-index classes ───────────────────────────────────────────────
+   Use these instead of Tailwind arbitrary z-[N] values so all z-index logic
+   lives in :root above and components stay readable. */
+.z-ui     { z-index: var(--z-ui); }
+.z-sheet  { z-index: var(--z-sheet); }
+.z-drawer { z-index: var(--z-drawer); }
+.z-modal  { z-index: var(--z-modal); }
+.z-toast  { z-index: var(--z-toast); }
 
 /* ─── Full-screen page wrapper with safe-area insets ─────────────────────────
    For login / register pages: fills physical screen, content padded away from
