@@ -36,7 +36,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /\/api\/(restaurants|accommodations)/,
+            urlPattern: /\/api\/places/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-data',

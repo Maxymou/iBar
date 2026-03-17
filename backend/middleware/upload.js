@@ -21,11 +21,11 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Format de fichier non supporté. Utilisez JPEG, PNG, WebP ou GIF.'));
+    cb(new Error('Format de fichier non supporté. Utilisez JPEG, PNG ou WebP.'));
   }
 };
 

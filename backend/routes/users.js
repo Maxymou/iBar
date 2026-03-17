@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { authenticate } = require('../middleware/auth');
-const { upload } = require('../middleware/upload');
+const { upload, validateMagicBytes } = require('../middleware/upload');
 const { updateProfile } = require('../controllers/userController');
 
 const handleUploadError = (err, req, res, next) => {
@@ -12,6 +12,6 @@ const handleUploadError = (err, req, res, next) => {
   next(err);
 };
 
-router.put('/profile', authenticate, upload.single('avatar'), handleUploadError, updateProfile);
+router.put('/profile', authenticate, upload.single('avatar'), handleUploadError, validateMagicBytes, updateProfile);
 
 module.exports = router;

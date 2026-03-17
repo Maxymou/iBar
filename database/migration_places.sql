@@ -4,6 +4,10 @@
 -- Migration: Create unified places table for map-first architecture
 -- Run this after schema.sql
 --
+-- PURPOSE: Upgrade from v0.x (separate restaurants/accommodations/cafes tables)
+--          to v1.x (unified places table) with PostGIS spatial support.
+--          For fresh installs, use schema.sql instead.
+--
 -- Required extensions: postgis, pg_trgm, pgcrypto
 
 -- ============================================================
