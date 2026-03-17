@@ -1,3 +1,6 @@
+-- ATTENTION : Ce fichier requiert PostGIS. Si PostGIS n'est pas disponible,
+-- utiliser migration_places_no_postgis.sql à la place.
+--
 -- Migration: Create unified places table for map-first architecture
 -- Run this after schema.sql
 --

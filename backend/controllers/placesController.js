@@ -29,15 +29,14 @@ const getAll = async (req, res) => {
     paramIdx++;
   }
 
-  // Bounding box filter using PostGIS: bbox=south,west,north,east
+  // Bounding box filter: bbox=south,west,north,east
   if (bbox) {
     const [south, west, north, east] = bbox.split(',').map(Number);
     if ([south, west, north, east].every(n => !isNaN(n))) {
-      // ST_MakeEnvelope(xmin, ymin, xmax, ymax, srid) = (west, south, east, north)
       conditions.push(
-        `ST_Intersects(p.geom, ST_MakeEnvelope($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}, 4326)::geography)`
+        `p.lat BETWEEN $${paramIdx} AND $${paramIdx + 1} AND p.lng BETWEEN $${paramIdx + 2} AND $${paramIdx + 3}`
       );
-      params.push(west, south, east, north);
+      params.push(south, north, west, east);
       paramIdx += 4;
     }
   }
@@ -49,10 +48,16 @@ const getAll = async (req, res) => {
     const userLat = parseFloat(lat);
     const userLng = parseFloat(lng);
     if (!isNaN(userLat) && !isNaN(userLng)) {
-      // ST_MakePoint takes (lng, lat); ST_Distance returns meters on geography type
-      distanceSelect = `ST_Distance(p.geom, ST_SetSRID(ST_MakePoint($${paramIdx}, $${paramIdx + 1}), 4326)::geography) / 1000.0 AS distance`;
+      // Haversine approximation using standard SQL (returns approximate km)
+      distanceSelect = `(
+        6371.0 * 2 * ASIN(SQRT(
+          POWER(SIN(RADIANS((p.lat - $${paramIdx}) / 2)), 2) +
+          COS(RADIANS($${paramIdx})) * COS(RADIANS(p.lat)) *
+          POWER(SIN(RADIANS((p.lng - $${paramIdx + 1}) / 2)), 2)
+        ))
+      ) AS distance`;
       orderBy = 'distance ASC NULLS LAST';
-      params.push(userLng, userLat);
+      params.push(userLat, userLng);
       paramIdx += 2;
     }
   }
