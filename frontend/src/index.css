@@ -2,28 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Layout variables — single source of truth for bottom positioning ─── */
+/* ─── Layout variables — single source of truth ─────────────────────────── */
 :root {
-  /* Zone 1 : visible tab bar */
-  --nav-visible-h: 50px;
+  /* Safe area insets */
+  --sat: env(safe-area-inset-top, 0px);       /* status bar / notch height */
+  --sab: env(safe-area-inset-bottom, 0px);    /* home indicator height */
 
-  /* Zone 2 : home indicator / safe area (env var, 0 on non-notched devices) */
-  --nav-safe-h: env(safe-area-inset-bottom, 0px);
-
-  /* Zone 3 : total nav element height = visible + safe */
-  --nav-stack-base: calc(var(--nav-visible-h) + var(--nav-safe-h));
-
-  /* Status bar / notch (used by top header only) */
-  --sat: env(safe-area-inset-top, 0px);
-  --header-total: calc(var(--nav-visible-h) + var(--sat));
-
-  /* Floating buttons: positioned above the visible nav top.
-     Base = --nav-stack-base (= physical screen bottom up to top of visible tabs).
-     Offset is the gap between the nav top edge and the FAB bottom edge. */
-  --fab-offset: 0.5rem;                                         /* 8px gap above nav visible top */
-  --gps-offset: 4rem;                                           /* 64px gap above FAB */
-  --fab-bottom: calc(var(--nav-stack-base) + var(--fab-offset)); /* sab + 50 + 8 */
-  --gps-bottom: calc(var(--fab-bottom)     + var(--gps-offset)); /* fab + 64 */
+  /* ─── Z-index scale (map-first layout) ───────────────────────────────────
+     z-0   : leaflet-container  (map, crée son propre stacking context)
+     z-10  : TopBar, CategoryPill, FloatingActions  (au-dessus de la carte)
+     z-20  : ExploreListOverlay, PlaceDetailOverlay (sheets au-dessus de l'UI)
+     z-100 : UserDrawer         (drawer, au-dessus des sheets)
+     z-200 : Modal              (modal, au-dessus de tout)
+     ─────────────────────────────────────────────────────────────────────── */
+  --z-map:    0;
+  --z-ui:    10;
+  --z-sheet: 20;
+  --z-drawer: 100;
+  --z-modal:  200;
 }
 
 /* ─── Standalone PWA: position:fixed anchors to the physical viewport with
@@ -142,13 +138,12 @@ body {
 
 /* Bottom nav — position:fixed, bottom:0 = physical screen bottom on iOS PWA.
    Three-zone stack (flex-column + flex-end):
-     ┌────────────────────────────────┐  ← nav element top (nav-stack-base from screen bottom)
-     │  .bottom-nav-inner  56px       │  ← visible tab row, icons/labels
+     ┌────────────────────────────────┐  ← nav element top
+     │  .bottom-nav-inner  50px       │  ← visible tab row, icons/labels
      ├────────────────────────────────┤  ← visible nav bottom = just above safe area
-     │  ::after            --nav-safe-h│ ← safe area spacer, painted nav colour
+     │  ::after            --sab      │  ← safe area spacer (~34px on Face ID iPhones)
      └────────────────────────────────┘  ← screen physical bottom
-   justify-content:flex-end anchors the inner row to the bottom of the visible zone,
-   preventing it from floating at the top of the container. */
+   justify-content:flex-end anchors the inner row to the bottom of the visible zone. */
 .bottom-nav {
   @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50;
   display: flex;
@@ -158,14 +153,14 @@ body {
 
 .bottom-nav-inner {
   @apply flex items-center justify-around px-4;
-  height: var(--nav-visible-h);   /* 56px — centering scoped to the visible zone only */
+  height: 50px;
   flex-shrink: 0;
 }
 
 /* Safe area spacer: painted by nav background, sits between icons and physical screen edge */
 .bottom-nav::after {
   content: '';
-  height: var(--nav-safe-h);   /* ~34px on Face ID iPhones, 0 on older/desktop */
+  height: var(--sab);   /* ~34px on Face ID iPhones, 0 on older/desktop */
   flex-shrink: 0;
 }
 
@@ -174,7 +169,7 @@ body {
   @apply bg-white border-b border-gray-100 z-40
          flex items-center justify-between px-4;
   padding-top: var(--sat);
-  height: var(--header-total);   /* nav-visible-h + sat */
+  height: calc(50px + var(--sat));
 }
 
 /* Input style */

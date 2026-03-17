@@ -7,7 +7,7 @@ const CATEGORIES = [
 
 const ExploreCategoryPill = ({ selected, onChange }) => {
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-[500] pointer-events-none pb-6"
+    <div className="absolute bottom-0 left-0 right-0 z-[10] pointer-events-none"
          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
       <div className="flex justify-center">
         <div className="pointer-events-auto inline-flex bg-white dark:bg-gray-800 rounded-full

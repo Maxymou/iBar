@@ -20,6 +20,7 @@ const compressImage = async (filePath, options = {}) => {
 
   try {
     await sharp(filePath)
+      .rotate()                                                        // auto-orient via EXIF
       .resize(width, height, { withoutEnlargement: true, fit: 'inside' })
       .jpeg({ quality })
       .toFile(outputPath);

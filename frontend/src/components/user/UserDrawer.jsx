@@ -15,12 +15,20 @@ const UserDrawer = ({ isOpen, onClose }) => {
   const [form, setForm] = useState({ name: '', email: '' });
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [loading, setLoading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const avatarRef = useRef();
 
   const openEdit = () => {
     setForm({ name: user.name, email: user.email });
+    setAvatarPreview(null);
     setEditOpen(true);
     onClose();
+  };
+
+  const closeEdit = () => {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview(null);
+    setEditOpen(false);
   };
 
   const handleEditSubmit = async (e) => {
@@ -36,6 +44,8 @@ const UserDrawer = ({ isOpen, onClose }) => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       updateUser(res.data);
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+      setAvatarPreview(null);
       setEditOpen(false);
       toast('Profil mis à jour', 'success');
     } catch (err) {
@@ -142,7 +152,7 @@ const UserDrawer = ({ isOpen, onClose }) => {
       )}
 
       {/* Edit Profile Modal */}
-      <Modal isOpen={editOpen} onClose={() => setEditOpen(false)} title="Modifier le profil"
+      <Modal isOpen={editOpen} onClose={closeEdit} title="Modifier le profil"
              footer={
                <button onClick={handleEditSubmit} disabled={loading}
                        className="ios-button-primary w-full disabled:opacity-50">
@@ -152,12 +162,39 @@ const UserDrawer = ({ isOpen, onClose }) => {
         <form onSubmit={handleEditSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Photo de profil</label>
-            <input ref={avatarRef} type="file" accept="image/*" className="hidden"
-                   onChange={e => setForm(p => ({ ...p, avatar: e.target.files[0] }))} />
-            <button type="button" onClick={() => avatarRef.current.click()}
-                    className="w-full py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm">
-              {form.avatar ? form.avatar.name : '📷 Choisir une photo'}
-            </button>
+            <input
+              ref={avatarRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+                setAvatarPreview(URL.createObjectURL(file));
+                setForm(p => ({ ...p, avatar: file }));
+              }}
+            />
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700
+                              border border-gray-200 dark:border-gray-600 flex-shrink-0
+                              flex items-center justify-center">
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="Aperçu" className="w-full h-full object-cover" />
+                ) : user.avatar_url ? (
+                  <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl text-gray-500 dark:text-gray-300 font-bold">
+                    {user.name?.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <button type="button" onClick={() => avatarRef.current.click()}
+                      className="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700
+                                 text-gray-700 dark:text-gray-200 text-sm">
+                📷 Choisir une photo
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Nom</label>
