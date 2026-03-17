@@ -1,12 +1,12 @@
 -- Migration: Create unified places table for map-first architecture
 -- Run this after schema.sql
 --
--- Required extensions: postgis, pg_trgm, uuid-ossp
+-- Required extensions: postgis, pg_trgm, pgcrypto
 
 -- ============================================================
 -- EXTENSIONS
 -- ============================================================
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
