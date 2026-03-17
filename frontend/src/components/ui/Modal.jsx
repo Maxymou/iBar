@@ -20,7 +20,7 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-modal flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
 
@@ -49,7 +49,7 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
         {/* Footer */}
         {footer && (
           <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-700"
-               style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+               style={{ paddingBottom: 'max(1rem, var(--sab))' }}>
             {footer}
           </div>
         )}

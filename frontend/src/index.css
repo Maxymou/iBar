@@ -8,18 +8,27 @@
   --sat: env(safe-area-inset-top, 0px);       /* status bar / notch height */
   --sab: env(safe-area-inset-bottom, 0px);    /* home indicator height */
 
+  /* ─── Map-first overlay positioning ───────────────────────────────────────
+     Pill bar sits at bottom-0 and uses internal padding to push content above
+     the home indicator zone.  FABs are positioned above the pill bar.
+     All values derive from --sab so there's a single source to tune. ──── */
+  --pill-pad-bottom: calc(var(--sab) + 1.5rem);  /* padding-bottom inside pill bar container */
+  --fabs-bottom:     calc(var(--sab) + 5rem);     /* bottom distance for FABs stack           */
+
   /* ─── Z-index scale (map-first layout) ───────────────────────────────────
      z-0   : leaflet-container  (map, crée son propre stacking context)
      z-10  : TopBar, CategoryPill, FloatingActions  (au-dessus de la carte)
      z-20  : ExploreListOverlay, PlaceDetailOverlay (sheets au-dessus de l'UI)
-     z-100 : UserDrawer         (drawer, au-dessus des sheets)
-     z-200 : Modal              (modal, au-dessus de tout)
+     z-150 : UserDrawer         (drawer, au-dessus des sheets)
+     z-200 : Modal              (modal, au-dessus du drawer)
+     z-300 : Toast              (notifications, toujours au-dessus de tout)
      ─────────────────────────────────────────────────────────────────────── */
-  --z-map:    0;
-  --z-ui:    10;
-  --z-sheet: 20;
-  --z-drawer: 100;
+  --z-map:     0;
+  --z-ui:     10;
+  --z-sheet:  20;
+  --z-drawer: 150;
   --z-modal:  200;
+  --z-toast:  300;
 }
 
 /* ─── Standalone PWA: position:fixed anchors to the physical viewport with
@@ -46,7 +55,7 @@ html {
 
 body, #root {
   height: 100%;
-  min-height: 100%;
+  min-height: 100dvh;   /* belt-and-suspenders: ensures full physical screen on iOS PWA */
   overflow: hidden;
 }
 
@@ -84,11 +93,49 @@ body {
 
 /* Safe area insets for notched phones */
 .safe-top {
-  padding-top: env(safe-area-inset-top);
+  padding-top: var(--sat);
 }
 
 .safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--sab);
+}
+
+/* ─── Map-first overlay positioning ─────────────────────────────────────────
+   Use these classes instead of inline env() calculations in components.
+   Single source: tweak --pill-pad-bottom / --fabs-bottom in :root to adjust. */
+
+/* Pill bar container — absolute bottom-0, padding pushes content above home bar */
+.explore-pill-bar {
+  padding-bottom: var(--pill-pad-bottom);
+}
+
+/* FABs container — positioned above the pill bar */
+.explore-fabs {
+  bottom: var(--fabs-bottom);
+}
+
+/* Top bar container — absolute top-0, padding pushes content below status bar */
+.explore-top-bar {
+  padding-top: var(--sat);
+}
+
+/* ─── Semantic z-index classes ───────────────────────────────────────────────
+   Use these instead of Tailwind arbitrary z-[N] values so all z-index logic
+   lives in :root above and components stay readable. */
+.z-ui     { z-index: var(--z-ui); }
+.z-sheet  { z-index: var(--z-sheet); }
+.z-drawer { z-index: var(--z-drawer); }
+.z-modal  { z-index: var(--z-modal); }
+.z-toast  { z-index: var(--z-toast); }
+
+/* ─── Full-screen page wrapper with safe-area insets ─────────────────────────
+   For login / register pages: fills physical screen, content padded away from
+   status bar (top) and home indicator (bottom).
+   Must come after @tailwind utilities so these override p-* shorthands. */
+.page-full-safe {
+  min-height: 100dvh;
+  padding-top: var(--sat);
+  padding-bottom: max(1.5rem, var(--sab));
 }
 
 /* Leaflet map */
