@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS places (
 
     description TEXT,
     address TEXT,
+    phone VARCHAR(50),
 
     lat DOUBLE PRECISION NOT NULL,
     lng DOUBLE PRECISION NOT NULL,

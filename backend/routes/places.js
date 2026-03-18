@@ -20,6 +20,7 @@ const placeValidation = [
   body('lat').isFloat({ min: -90, max: 90 }).withMessage('Latitude invalide'),
   body('lng').isFloat({ min: -180, max: 180 }).withMessage('Longitude invalide'),
   body('rating').optional({ values: 'falsy' }).isFloat({ min: 0, max: 5 }).withMessage('La note doit être entre 0 et 5'),
+  body('phone').optional({ values: 'falsy' }).trim().isLength({ max: 50 }).withMessage('Numéro trop long'),
 ];
 
 const updateValidation = [
@@ -28,6 +29,7 @@ const updateValidation = [
   body('lat').optional().isFloat({ min: -90, max: 90 }).withMessage('Latitude invalide'),
   body('lng').optional().isFloat({ min: -180, max: 180 }).withMessage('Longitude invalide'),
   body('rating').optional({ values: 'falsy' }).isFloat({ min: 0, max: 5 }).withMessage('La note doit être entre 0 et 5'),
+  body('phone').optional({ values: 'falsy' }).trim().isLength({ max: 50 }).withMessage('Numéro trop long'),
 ];
 
 const handleUploadError = (err, req, res, next) => {

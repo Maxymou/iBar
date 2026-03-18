@@ -19,14 +19,29 @@ const ExplorePage = ({ onUserClick }) => {
   const [editPlace, setEditPlace] = useState(null);
   const [sort, setSort] = useState('recent');
   const [recenterTrigger, setRecenterTrigger] = useState(0);
+  const [recenterCoords, setRecenterCoords] = useState(null);
   const [gpsLoading, setGpsLoading] = useState(false);
 
   const { location, error: gpsError, getLocation } = useGeolocation();
+  const hasInitialCenter = useRef(false);
   const { places, loading, fetchPlaces, deletePlace } = usePlaces();
   const { center, onMapMove, getBboxString } = useMapBounds();
   const { toast } = useToast();
 
   const debounceRef = useRef(null);
+
+  // Auto-request GPS on mount to center map on user position
+  useEffect(() => {
+    if (!location) getLocation();
+  }, []);
+
+  // Center map on first GPS fix (only once)
+  useEffect(() => {
+    if (location && !hasInitialCenter.current) {
+      hasInitialCenter.current = true;
+      setRecenterTrigger(t => t + 1);
+    }
+  }, [location]);
 
   // Fetch places when map moves or category changes
   const handleMapMove = useCallback((map) => {
@@ -86,6 +101,9 @@ const ExplorePage = ({ onUserClick }) => {
   }, [gpsError]);
 
   const handleSelectPlace = (place) => {
+    // Recenter map on the selected place
+    setRecenterCoords([place.lat, place.lng]);
+    setRecenterTrigger(t => t + 1);
     setSelectedPlace(place);
     setListOpen(false);
   };
@@ -125,6 +143,7 @@ const ExplorePage = ({ onUserClick }) => {
         onMapMove={handleMapMove}
         onSelectPlace={handleSelectPlace}
         recenterTrigger={recenterTrigger}
+        recenterCenter={recenterCoords}
       />
 
       {/* Top bar */}

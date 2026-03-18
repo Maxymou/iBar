@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS places (
     category TEXT NOT NULL CHECK (category IN ('cafe', 'restaurant', 'hotel')),
     description TEXT,
     address TEXT,
+    phone VARCHAR(50),
     lat DOUBLE PRECISION NOT NULL,
     lng DOUBLE PRECISION NOT NULL,
     source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'google_import')),

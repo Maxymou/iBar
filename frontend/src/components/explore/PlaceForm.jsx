@@ -21,7 +21,7 @@ const PlaceForm = ({ isOpen, onClose, place, onSaved, mapCenter, defaultCategory
   const [importing, setImporting] = useState(false);
   const [form, setForm] = useState({
     name: '', category: defaultCategory || 'restaurant', description: '',
-    address: '', rating: 0, lat: '', lng: '',
+    address: '', phone: '', rating: 0, lat: '', lng: '',
   });
 
   useEffect(() => {
@@ -31,6 +31,7 @@ const PlaceForm = ({ isOpen, onClose, place, onSaved, mapCenter, defaultCategory
         category: place.category || 'restaurant',
         description: place.description || '',
         address: place.address || '',
+        phone: place.phone || '',
         rating: place.rating || 0,
         lat: place.lat || '',
         lng: place.lng || '',
@@ -40,7 +41,7 @@ const PlaceForm = ({ isOpen, onClose, place, onSaved, mapCenter, defaultCategory
     } else {
       setForm({
         name: '', category: defaultCategory || 'restaurant', description: '',
-        address: '', rating: 0, lat: '', lng: '',
+        address: '', phone: '', rating: 0, lat: '', lng: '',
       });
       setPreview('');
       setPhoto(null);
@@ -266,6 +267,11 @@ const PlaceForm = ({ isOpen, onClose, place, onSaved, mapCenter, defaultCategory
         <FormField label="Adresse">
           <input type="text" value={form.address} onChange={set('address')}
                  placeholder="Adresse (remplie automatiquement)" className="ios-input" />
+        </FormField>
+
+        <FormField label="Telephone">
+          <input type="tel" value={form.phone} onChange={set('phone')}
+                 placeholder="Numero de telephone" className="ios-input" />
         </FormField>
       </div>
     </Modal>
