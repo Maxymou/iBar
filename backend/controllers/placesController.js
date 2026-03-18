@@ -105,7 +105,7 @@ const getOne = async (req, res) => {
 };
 
 const create = async (req, res) => {
-  const { name, category, description, address, lat, lng, rating, source } = req.body;
+  const { name, category, description, address, phone, lat, lng, rating, source } = req.body;
 
   if (!name || !category || !lat || !lng) {
     return res.status(400).json({ error: 'name, category, lat et lng sont obligatoires' });
@@ -124,14 +124,14 @@ const create = async (req, res) => {
 
     const result = await db.query(`
       INSERT INTO places (
-        id, name, category, description, address,
+        id, name, category, description, address, phone,
         lat, lng, source, photo_url, rating,
         created_by, updated_by
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11)
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12)
       RETURNING *
     `, [
       uuidv4(), name.trim(), category, description || null, address || null,
-      parseFloat(lat), parseFloat(lng),
+      phone || null, parseFloat(lat), parseFloat(lng),
       source || 'manual', photo_url,
       rating ? parseFloat(rating) : null,
       req.user.id,
@@ -147,7 +147,7 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
   const { id } = req.params;
-  const { name, category, description, address, lat, lng, rating } = req.body;
+  const { name, category, description, address, phone, lat, lng, rating } = req.body;
 
   try {
     const existing = await db.query(
@@ -180,15 +180,16 @@ const update = async (req, res) => {
     const result = await db.query(`
       UPDATE places SET
         name = $1, category = $2, description = $3, address = $4,
-        lat = $5, lng = $6, photo_url = $7, rating = $8,
-        updated_by = $9, updated_at = NOW()
-      WHERE id = $10
+        phone = $5, lat = $6, lng = $7, photo_url = $8, rating = $9,
+        updated_by = $10, updated_at = NOW()
+      WHERE id = $11
       RETURNING *
     `, [
       name?.trim() || current.name,
       category || current.category,
       description !== undefined ? description : current.description,
       address !== undefined ? address : current.address,
+      phone !== undefined ? (phone || null) : current.phone,
       lat ? parseFloat(lat) : current.lat,
       lng ? parseFloat(lng) : current.lng,
       photo_url,

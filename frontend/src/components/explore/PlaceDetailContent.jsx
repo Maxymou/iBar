@@ -1,5 +1,6 @@
 import StarRating from '../ui/StarRating';
 import { useAuth } from '../../store/AuthContext';
+import { openNavigation } from '../../utils/navigation';
 
 const CATEGORY_LABELS = {
   cafe: { icon: '☕', label: 'Café', color: 'bg-orange-100 text-orange-700' },
@@ -55,12 +56,43 @@ const PlaceDetailContent = ({ place, onClose, onEdit, onDelete }) => {
           </p>
         )}
 
+        {/* Phone */}
+        {place.phone && (
+          <p className="text-sm text-primary-600 dark:text-primary-400 mb-2">
+            <a href={`tel:${place.phone}`} className="underline">{place.phone}</a>
+          </p>
+        )}
+
         {/* Description */}
         {place.description && (
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
             {place.description}
           </p>
         )}
+
+        {/* Navigation links */}
+        {(place.address || (place.lat && place.lng)) && (() => {
+          const nav = openNavigation(place.address, place.lat, place.lng);
+          return (
+            <div className="flex gap-2 mb-3">
+              <a href={nav.waze} target="_blank" rel="noopener noreferrer"
+                 className="flex-1 py-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600
+                            text-sm font-medium rounded-xl text-center">
+                Waze
+              </a>
+              <a href={nav.google} target="_blank" rel="noopener noreferrer"
+                 className="flex-1 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-600
+                            text-sm font-medium rounded-xl text-center">
+                Google
+              </a>
+              <a href={nav.apple} target="_blank" rel="noopener noreferrer"
+                 className="flex-1 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600
+                            text-sm font-medium rounded-xl text-center">
+                Plans
+              </a>
+            </div>
+          );
+        })()}
 
         {/* Source */}
         {place.source === 'google_import' && (

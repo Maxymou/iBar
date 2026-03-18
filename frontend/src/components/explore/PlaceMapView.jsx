@@ -72,10 +72,45 @@ const RecenterMap = ({ center, trigger }) => {
   return null;
 };
 
-const PlaceMapView = ({ places, userLocation, onMapMove, onSelectPlace, recenterTrigger }) => {
+// Inner component to access map instance for closing popups on selection
+const PlaceMarkers = ({ places, onSelectPlace }) => {
+  const map = useMap();
+
+  return places.filter(p => p.lat && p.lng).map(place => (
+    <Marker
+      key={place.id}
+      position={[place.lat, place.lng]}
+      icon={ICONS[place.category] || ICONS.restaurant}
+    >
+      <Popup>
+        <div className="text-center min-w-[140px]">
+          <p className="font-semibold text-gray-900 mb-1">{place.name}</p>
+          <p className="text-xs text-gray-500 mb-1 capitalize">{place.category}</p>
+          {place.address && <p className="text-xs text-gray-400 mb-2">{place.address}</p>}
+          <button
+            onClick={() => {
+              map.closePopup();
+              onSelectPlace(place);
+            }}
+            className="px-4 py-1.5 bg-primary-600 text-white text-xs font-medium
+                       rounded-lg w-full"
+          >
+            Voir
+          </button>
+        </div>
+      </Popup>
+    </Marker>
+  ));
+};
+
+const PlaceMapView = ({ places, userLocation, onMapMove, onSelectPlace, recenterTrigger, recenterCenter }) => {
   const defaultCenter = userLocation
     ? [userLocation.lat, userLocation.lng]
     : [48.8566, 2.3522];
+
+  // Use recenterCenter (e.g. selected place) if provided, else user location
+  const currentRecenterTarget = recenterCenter
+    || (userLocation ? [userLocation.lat, userLocation.lng] : null);
 
   return (
     <MapContainer
@@ -101,35 +136,12 @@ const PlaceMapView = ({ places, userLocation, onMapMove, onSelectPlace, recenter
         </Marker>
       )}
 
-      {places.filter(p => p.lat && p.lng).map(place => (
-        <Marker
-          key={place.id}
-          position={[place.lat, place.lng]}
-          icon={ICONS[place.category] || ICONS.restaurant}
-        >
-          <Popup>
-            <div className="text-center min-w-[140px]">
-              <p className="font-semibold text-gray-900 mb-1">{place.name}</p>
-              <p className="text-xs text-gray-500 mb-1 capitalize">{place.category}</p>
-              {place.address && <p className="text-xs text-gray-400 mb-2">{place.address}</p>}
-              <button
-                onClick={() => onSelectPlace(place)}
-                className="px-4 py-1.5 bg-primary-600 text-white text-xs font-medium
-                           rounded-lg w-full"
-              >
-                Voir
-              </button>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      <PlaceMarkers places={places} onSelectPlace={onSelectPlace} />
 
-      {userLocation && (
-        <RecenterMap
-          center={[userLocation.lat, userLocation.lng]}
-          trigger={recenterTrigger}
-        />
-      )}
+      <RecenterMap
+        center={currentRecenterTarget}
+        trigger={recenterTrigger}
+      />
     </MapContainer>
   );
 };
