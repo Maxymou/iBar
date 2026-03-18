@@ -65,6 +65,7 @@ log "Backend démarré (PID $BACKEND_PID) sur le port $PORT"
 
 # Adminer
 ADMINER_DIR="$PROJECT_DIR/adminer"
+bash "$SCRIPT_DIR/setup-adminer.sh" 2>/dev/null || true
 if [ -f "$ADMINER_DIR/adminer.php" ] && [ -f "$ADMINER_DIR/ibar-adminer.php" ] && command -v php &>/dev/null; then
   cd "$ADMINER_DIR"
   nohup php -S 0.0.0.0:$ADMINER_PORT ibar-adminer.php > "$PROJECT_DIR/logs/adminer.log" 2>&1 &

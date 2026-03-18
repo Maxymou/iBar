@@ -402,6 +402,14 @@ bash scripts/restore.sh backups/ibar_backup_20250101_120000.sql
 
 > ⚠️ Opération destructive — une confirmation explicite est demandée avant l'écrasement de la base.
 
+### Téléchargement d'Adminer
+
+```bash
+bash scripts/setup-adminer.sh
+```
+
+Vérifie si `adminer/adminer.php` est présent et le télécharge automatiquement depuis GitHub si absent. Ce script est aussi appelé automatiquement par les services systemd (`ExecStartPre`) et les scripts de démarrage.
+
 ### Export CSV
 
 ```bash
@@ -606,17 +614,15 @@ Consultez les sections [mise à jour frontend](#4-vulnérabilités-de-sécurité
 
 ### Adminer ne répond pas (port 9000)
 
+`adminer.php` est téléchargé automatiquement au démarrage du service (`ExecStartPre`) et par les scripts de démarrage. Si le problème persiste :
+
 ```bash
 # Vérifier le service
 sudo systemctl status ibar-adminer
 sudo journalctl -u ibar-adminer -n 30 --no-pager
 
-# Vérifier que adminer.php est présent
-ls -la adminer/adminer.php
-
-# Télécharger manuellement si absent
-curl -fsSL -o adminer/adminer.php \
-  "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php"
+# Télécharger manuellement si besoin
+bash scripts/setup-adminer.sh
 
 # Relancer le service
 sudo systemctl restart ibar-adminer
