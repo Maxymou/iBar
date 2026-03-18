@@ -21,6 +21,7 @@ const ExplorePage = ({ onUserClick }) => {
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [recenterCoords, setRecenterCoords] = useState(null);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [mapStyle, setMapStyle] = useState('standard');
 
   const { location, error: gpsError, getLocation } = useGeolocation();
   const hasInitialCenter = useRef(false);
@@ -144,6 +145,7 @@ const ExplorePage = ({ onUserClick }) => {
         onSelectPlace={handleSelectPlace}
         recenterTrigger={recenterTrigger}
         recenterCenter={recenterCoords}
+        mapStyle={mapStyle}
       />
 
       {/* Top bar */}
@@ -161,6 +163,8 @@ const ExplorePage = ({ onUserClick }) => {
         onGpsClick={handleGpsClick}
         onAddClick={() => { setEditPlace(null); setAddOpen(true); }}
         gpsLoading={gpsLoading}
+        satellite={mapStyle === 'satellite'}
+        onSatelliteToggle={() => setMapStyle(s => s === 'satellite' ? 'standard' : 'satellite')}
       />
 
       {/* List overlay */}

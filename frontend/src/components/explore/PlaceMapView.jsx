@@ -113,11 +113,16 @@ const TILE_LAYERS = {
     url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
     attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
   },
+  satellite: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri &mdash; Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+  },
 };
 
-const PlaceMapView = ({ places, userLocation, onMapMove, onSelectPlace, recenterTrigger, recenterCenter }) => {
+const PlaceMapView = ({ places, userLocation, onMapMove, onSelectPlace, recenterTrigger, recenterCenter, mapStyle = 'standard' }) => {
   const { effectiveTheme } = useTheme();
-  const tiles = TILE_LAYERS[effectiveTheme] || TILE_LAYERS.dark;
+  const tileKey = mapStyle === 'satellite' ? 'satellite' : effectiveTheme;
+  const tiles = TILE_LAYERS[tileKey] || TILE_LAYERS.dark;
 
   const defaultCenter = userLocation
     ? [userLocation.lat, userLocation.lng]
@@ -135,7 +140,7 @@ const PlaceMapView = ({ places, userLocation, onMapMove, onSelectPlace, recenter
       zoomControl={false}
     >
       <TileLayer
-        key={effectiveTheme}
+        key={tileKey}
         attribution={tiles.attribution}
         url={tiles.url}
       />
