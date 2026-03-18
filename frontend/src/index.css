@@ -267,15 +267,6 @@ body {
 }
 
 /* Leaflet map dark mode */
-.dark .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(200deg) brightness(0.9);
-}
-
-.dark .leaflet-marker-icon,
-.dark .leaflet-marker-shadow {
-  filter: invert(1) hue-rotate(200deg);
-}
-
 .dark .leaflet-popup-content-wrapper {
   background: #1f2937;
   color: #f3f4f6;
