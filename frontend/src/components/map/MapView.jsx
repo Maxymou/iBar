@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useTheme } from '../../store/ThemeContext';
 
 // Fix leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -77,7 +78,21 @@ const RecenterMap = ({ center, trigger }) => {
   return null;
 };
 
+const TILE_LAYERS = {
+  dark: {
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  },
+  light: {
+    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  },
+};
+
 const MapView = ({ items, userLocation, type, onView, recenterTrigger }) => {
+  const { effectiveTheme } = useTheme();
+  const tiles = TILE_LAYERS[effectiveTheme] || TILE_LAYERS.dark;
+
   const defaultCenter = userLocation
     ? [userLocation.lat, userLocation.lng]
     : [48.8566, 2.3522]; // Paris
@@ -94,8 +109,9 @@ const MapView = ({ items, userLocation, type, onView, recenterTrigger }) => {
       zoomControl={true}
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        key={effectiveTheme}
+        attribution={tiles.attribution}
+        url={tiles.url}
       />
 
       {userLocation && (

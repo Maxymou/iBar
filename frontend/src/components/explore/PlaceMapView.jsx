@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useTheme } from '../../store/ThemeContext';
 
 // Fix leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -103,7 +104,21 @@ const PlaceMarkers = ({ places, onSelectPlace }) => {
   ));
 };
 
+const TILE_LAYERS = {
+  dark: {
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  },
+  light: {
+    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  },
+};
+
 const PlaceMapView = ({ places, userLocation, onMapMove, onSelectPlace, recenterTrigger, recenterCenter }) => {
+  const { effectiveTheme } = useTheme();
+  const tiles = TILE_LAYERS[effectiveTheme] || TILE_LAYERS.dark;
+
   const defaultCenter = userLocation
     ? [userLocation.lat, userLocation.lng]
     : [48.8566, 2.3522];
@@ -120,8 +135,9 @@ const PlaceMapView = ({ places, userLocation, onMapMove, onSelectPlace, recenter
       zoomControl={false}
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        key={effectiveTheme}
+        attribution={tiles.attribution}
+        url={tiles.url}
       />
 
       <MapEvents onMapMove={onMapMove} />

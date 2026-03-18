@@ -4,10 +4,16 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'auto');
+  const [effectiveTheme, setEffectiveTheme] = useState(() => {
+    if (theme === 'dark') return 'dark';
+    if (theme === 'light') return 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
 
   useEffect(() => {
     const applyTheme = (isDark) => {
       document.documentElement.classList.toggle('dark', isDark);
+      setEffectiveTheme(isDark ? 'dark' : 'light');
     };
 
     if (theme === 'dark') {
@@ -29,7 +35,7 @@ export const ThemeProvider = ({ children }) => {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme: setAndSave }}>
+    <ThemeContext.Provider value={{ theme, effectiveTheme, setTheme: setAndSave }}>
       {children}
     </ThemeContext.Provider>
   );
