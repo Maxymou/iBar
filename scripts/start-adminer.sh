@@ -7,8 +7,7 @@ ADMINER_PORT="${ADMINER_PORT:-9000}"
 ADMINER_DIR="$PROJECT_DIR/adminer"
 
 if [ ! -f "$ADMINER_DIR/adminer.php" ]; then
-  echo "Adminer non trouvé. Lancez d'abord: bash scripts/install.sh"
-  exit 1
+  bash "$SCRIPT_DIR/setup-adminer.sh" || exit 1
 fi
 
 if ! command -v php &>/dev/null; then

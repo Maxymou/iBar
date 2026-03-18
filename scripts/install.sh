@@ -265,6 +265,7 @@ After=network.target
 Type=simple
 User=$CURRENT_USER
 WorkingDirectory=$PROJECT_DIR/adminer
+ExecStartPre=/bin/bash $PROJECT_DIR/scripts/setup-adminer.sh
 ExecStart=$PHP_BIN -S 0.0.0.0:$ADMINER_PORT ibar-adminer.php
 Restart=always
 RestartSec=5
