@@ -1,6 +1,22 @@
-const ExploreFloatingActions = ({ onGpsClick, onAddClick, gpsLoading }) => {
+const ExploreFloatingActions = ({ onGpsClick, onAddClick, gpsLoading, satellite, onSatelliteToggle }) => {
   return (
     <div className="absolute right-4 z-ui pointer-events-none flex flex-col gap-3 explore-fabs">
+      {/* Satellite toggle button */}
+      <button
+        onClick={onSatelliteToggle}
+        aria-label={satellite ? 'Vue carte standard' : 'Vue satellite'}
+        className={`pointer-events-auto w-12 h-12 rounded-full
+                   border shadow-lg
+                   flex items-center justify-center text-xl
+                   active:scale-95 transition-all
+                   ${satellite
+                     ? 'bg-primary-600 border-primary-500 text-white'
+                     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600'
+                   }`}
+      >
+        {satellite ? '🗺️' : '🛰️'}
+      </button>
+
       {/* GPS button */}
       <button
         onClick={onGpsClick}
