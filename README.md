@@ -7,6 +7,7 @@ Application mobile-first Progressive Web App (PWA) pour gérer vos restaurants e
 - [Stack technique](#stack-technique)
 - [Structure du projet](#structure-du-projet)
 - [Démarrage rapide](#démarrage-rapide)
+- [Docker (recommandé)](#docker-recommandé)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Base de données](#base-de-données)
@@ -95,6 +96,23 @@ npm start
 
 > **Installation complète sur serveur Ubuntu/Debian (avec sudo)** — installe Node.js, PostgreSQL,
 > PHP et configure systemd automatiquement : voir la section [Installation](#installation).
+
+---
+
+## Docker (recommandé)
+
+Le moyen le plus simple de déployer iBar est Docker. Voir **[DOCKER.md](DOCKER.md)** pour la documentation complète.
+
+```bash
+cp .env.docker.example .env
+# Éditer .env avec vos secrets (DB_PASSWORD, JWT_SECRET, JWT_REFRESH_SECRET)
+docker compose up -d --build
+```
+
+- **Application** : `http://<IP>:8000`
+- **Adminer** : `http://<IP>:9000`
+
+Compatible Portainer — voir [DOCKER.md](DOCKER.md#déploiement-avec-portainer).
 
 ---
 
