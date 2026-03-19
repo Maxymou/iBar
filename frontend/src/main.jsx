@@ -5,20 +5,43 @@ import './index.css';
 
 // ─── iOS PWA viewport fix ─────────────────────────────────────────────────────
 // On iOS PWA standalone mode, 100dvh / 100% can become stale after orientation
-// changes, leaving a white bar at the bottom. We compute the real viewport height
-// in JS and expose it as --app-height so CSS can use a pixel-accurate value.
+// changes or keyboard open/close. We track visualViewport in real-time and
+// expose several CSS custom properties:
+//   --app-height     : visual viewport height (backward compat, used by map/root)
+//   --vvh            : same value, semantic alias for auth pages
+//   --vv-top         : visualViewport.offsetTop (non-zero when iOS scrolls for keyboard)
+//   --keyboard-offset: difference between layout viewport and visual viewport
 ;(function initAppHeight() {
-  function setHeight() {
-    const h = window.visualViewport?.height ?? window.innerHeight;
-    document.documentElement.style.setProperty('--app-height', h + 'px');
+  function update() {
+    const vv = window.visualViewport;
+    const ih = window.innerHeight;
+    const h = vv ? vv.height : ih;
+    const top = vv ? vv.offsetTop : 0;
+    const kbOffset = vv ? Math.max(0, ih - vv.height) : 0;
+    const s = document.documentElement.style;
+    s.setProperty('--app-height', h + 'px');
+    s.setProperty('--vvh', h + 'px');
+    s.setProperty('--vv-top', top + 'px');
+    s.setProperty('--keyboard-offset', kbOffset + 'px');
   }
-  setHeight();
+
+  update();
+
+  const rafUpdate = () => requestAnimationFrame(update);
   let tid;
-  const debounced = () => { clearTimeout(tid); tid = setTimeout(setHeight, 50); };
+  const debounced = () => { clearTimeout(tid); tid = setTimeout(rafUpdate, 50); };
+
   window.addEventListener('resize', debounced);
-  window.addEventListener('orientationchange', () => setTimeout(debounced, 150));
+
+  // iOS takes 100-500ms to settle viewport after rotation — staggered recalcs
+  window.addEventListener('orientationchange', () => {
+    [100, 300, 500].forEach(ms => setTimeout(rafUpdate, ms));
+  });
+
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', debounced);
+    // scroll fires when iOS pushes the viewport up for the keyboard
+    window.visualViewport.addEventListener('scroll', rafUpdate);
   }
 })();
 

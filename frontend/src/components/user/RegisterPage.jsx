@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../store/AuthContext';
 import { useToast } from '../ui/Toast';
+import AuthLayout from './AuthLayout';
 
 const RegisterPage = () => {
   const [form, setForm] = useState({ name: '', email: '', confirmEmail: '', password: '', confirm: '' });
@@ -37,15 +38,17 @@ const RegisterPage = () => {
     }
   };
 
-  return (
-    <div className="bg-gradient-to-br from-primary-700 to-primary-900 flex flex-col items-center justify-center p-6 page-full-safe">
-      <div className="mb-6 text-center">
-        <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-ios-lg">
-          <span className="text-4xl">🍸</span>
-        </div>
-        <h1 className="text-4xl font-bold text-white">IBar</h1>
+  const brand = (
+    <div className="text-center">
+      <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-ios-lg">
+        <span className="text-4xl">🍸</span>
       </div>
+      <h1 className="text-4xl font-bold text-white">IBar</h1>
+    </div>
+  );
 
+  return (
+    <AuthLayout brand={brand}>
       <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-3xl shadow-ios-lg p-6">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Créer un compte</h2>
 
@@ -91,7 +94,7 @@ const RegisterPage = () => {
           <Link to="/login" className="text-primary-600 font-medium">Se connecter</Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 
