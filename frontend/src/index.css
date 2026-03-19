@@ -48,14 +48,12 @@
    body and #root follow so the entire element stack covers the physical screen.
    min-height:100dvh ensures coverage even if 100% under-shoots on some iOS. ─── */
 html {
-  height: 100%;
-  min-height: 100dvh;
+  height: var(--app-height, 100dvh);
   overflow: hidden;
 }
 
 body, #root {
-  height: 100%;
-  min-height: 100dvh;   /* belt-and-suspenders: ensures full physical screen on iOS PWA */
+  height: var(--app-height, 100dvh);
   overflow: hidden;
 }
 
@@ -133,7 +131,7 @@ body {
    status bar (top) and home indicator (bottom).
    Must come after @tailwind utilities so these override p-* shorthands. */
 .page-full-safe {
-  min-height: 100dvh;
+  min-height: var(--app-height, 100dvh);
   padding-top: var(--sat);
   padding-bottom: max(1.5rem, var(--sab));
 }

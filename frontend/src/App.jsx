@@ -40,7 +40,7 @@ const AppLayout = () => {
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return (
-    <div className="flex items-center justify-center" style={{ minHeight: '100dvh' }}>
+    <div className="flex items-center justify-center" style={{ minHeight: 'var(--app-height, 100dvh)' }}>
       <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );

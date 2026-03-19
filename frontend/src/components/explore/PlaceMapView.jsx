@@ -43,6 +43,42 @@ const ICONS = {
   hotel: makeIcon('#8b5cf6', '🏨'),
 };
 
+// ─── iOS PWA resize fix ────────────────────────────────────────────────────
+// After orientation changes on iOS PWA, the Leaflet container may have a new
+// size but the map's internal cache is stale. invalidateSize() forces Leaflet
+// to re-read its container dimensions and redraw tiles accordingly.
+const MapResizeHandler = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const invalidate = () => map.invalidateSize({ animate: false });
+
+    // Invalidate on mount (handles late container sizing)
+    invalidate();
+
+    let tid;
+    const debounced = () => { clearTimeout(tid); tid = setTimeout(invalidate, 100); };
+    const onOrientation = () => setTimeout(invalidate, 200);
+
+    window.addEventListener('resize', debounced);
+    window.addEventListener('orientationchange', onOrientation);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', debounced);
+    }
+
+    return () => {
+      clearTimeout(tid);
+      window.removeEventListener('resize', debounced);
+      window.removeEventListener('orientationchange', onOrientation);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', debounced);
+      }
+    };
+  }, [map]);
+
+  return null;
+};
+
 const MapEvents = ({ onMapMove }) => {
   const map = useMap();
 
@@ -145,6 +181,7 @@ const PlaceMapView = ({ places, userLocation, onMapMove, onSelectPlace, recenter
         url={tiles.url}
       />
 
+      <MapResizeHandler />
       <MapEvents onMapMove={onMapMove} />
 
       {userLocation && (
