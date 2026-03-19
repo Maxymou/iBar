@@ -30,22 +30,37 @@ const AuthLayout = ({ children, brand }) => {
 
     // ── Keyboard detection via visualViewport ──
     const vv = window.visualViewport;
-    const onViewport = () => {
+    const checkKeyboard = () => {
       if (!vv) return;
       const delta = window.innerHeight - vv.height;
       setIsKeyboardOpen(delta > KEYBOARD_THRESHOLD);
     };
     if (vv) {
-      vv.addEventListener('resize', onViewport);
-      vv.addEventListener('scroll', onViewport);
+      vv.addEventListener('resize', checkKeyboard);
+      vv.addEventListener('scroll', checkKeyboard);
     }
+
+    // ── Re-evaluate after orientation change ──
+    // iOS may report a transitional visualViewport.height immediately after
+    // orientationchange, leading to a false keyboard-open detection.
+    // A 300ms delay lets the viewport settle before we re-check.
+    const onOrientationChange = () => setTimeout(checkKeyboard, 300);
+    window.addEventListener('orientationchange', onOrientationChange);
+
+    // ── Re-evaluate on back navigation ──
+    // iOS does not fire a resize event on pageshow, so the keyboard state
+    // can be stale when the user navigates back to a login/register page.
+    const onPageShow = () => setTimeout(checkKeyboard, 50);
+    window.addEventListener('pageshow', onPageShow);
 
     return () => {
       mql.removeEventListener('change', onOrientation);
       if (vv) {
-        vv.removeEventListener('resize', onViewport);
-        vv.removeEventListener('scroll', onViewport);
+        vv.removeEventListener('resize', checkKeyboard);
+        vv.removeEventListener('scroll', checkKeyboard);
       }
+      window.removeEventListener('orientationchange', onOrientationChange);
+      window.removeEventListener('pageshow', onPageShow);
     };
   }, []);
 

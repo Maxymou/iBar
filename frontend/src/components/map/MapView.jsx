@@ -63,6 +63,41 @@ const cafeIcon = new L.Icon({
   popupAnchor: [0, -48],
 });
 
+// ─── iOS PWA resize fix ────────────────────────────────────────────────────
+// After orientation changes on iOS PWA, Leaflet's internal container size cache
+// becomes stale. invalidateSize() forces a re-read of dimensions and redraws.
+const MapResizeHandler = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const invalidate = () => map.invalidateSize({ animate: false });
+
+    // Handle late container sizing on mount
+    invalidate();
+
+    let tid;
+    const debounced = () => { clearTimeout(tid); tid = setTimeout(invalidate, 100); };
+    const onOrientation = () => setTimeout(invalidate, 200);
+
+    window.addEventListener('resize', debounced);
+    window.addEventListener('orientationchange', onOrientation);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', debounced);
+    }
+
+    return () => {
+      clearTimeout(tid);
+      window.removeEventListener('resize', debounced);
+      window.removeEventListener('orientationchange', onOrientation);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', debounced);
+      }
+    };
+  }, [map]);
+
+  return null;
+};
+
 // Only recenters when recenterTrigger changes (explicit user request), not on every location update
 const RecenterMap = ({ center, trigger }) => {
   const map = useMap();
@@ -113,6 +148,8 @@ const MapView = ({ items, userLocation, type, onView, recenterTrigger }) => {
         attribution={tiles.attribution}
         url={tiles.url}
       />
+
+      <MapResizeHandler />
 
       {userLocation && (
         <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
