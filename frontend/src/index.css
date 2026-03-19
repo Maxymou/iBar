@@ -140,7 +140,10 @@ body {
 
 /* ─── Auth pages — dedicated layout for iPhone PWA + keyboard + landscape ─────
    Uses position:fixed + visualViewport tracking to decouple from the
-   html/body/#root overflow:hidden chain that serves the map layout.          */
+   html/body/#root overflow:hidden chain that serves the map layout.
+   --app-height is the STABLE layout-viewport height (window.innerHeight).
+   --vvh is the visual-viewport height (shrinks with the iOS keyboard).
+   auth-shell uses --vvh for its height so it follows the visible area.        */
 
 .auth-shell {
   position: fixed;
@@ -209,6 +212,32 @@ body {
 
 .auth-shell.auth-keyboard-open .auth-brand {
   display: none;
+}
+
+/* ─── Landscape layout — CSS fallback (complément du JS) ─────────────────────
+   Mirrors .auth-landscape without requiring the JS class to be present.
+   Guards against the first render before React hydrates, slow matchMedia
+   callbacks, or any orientation-change the JS listener might miss.
+   :not(.auth-keyboard-open) ensures the keyboard-compact mode always wins
+   over the 2-column layout when the keyboard is open. ─────────────────────── */
+@media (orientation: landscape) {
+  .auth-shell:not(.auth-keyboard-open) .auth-content {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 3rem;
+    padding: 1.5rem 2rem;
+  }
+  .auth-shell:not(.auth-keyboard-open) .auth-brand {
+    flex: 0 0 auto;
+    max-width: 40%;
+    text-align: center;
+  }
+  .auth-shell:not(.auth-keyboard-open) .auth-card {
+    flex: 0 1 24rem;
+    max-height: 100%;
+    overflow-y: auto;
+  }
 }
 
 /* Leaflet map */
