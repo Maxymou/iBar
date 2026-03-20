@@ -47,21 +47,48 @@ const ICONS = {
 // After orientation changes on iOS PWA, the Leaflet container may have a new
 // size but the map's internal cache is stale. invalidateSize() forces Leaflet
 // to re-read its container dimensions and redraw tiles accordingly.
+//
+// Additional coverage beyond plain 'resize':
+//   - Staggered invalidation on mount: catches late container sizing from
+//     iOS PWA viewport stabilisation (~600 ms after launch).
+//   - focusout: after keyboard close, iOS may briefly mis-report the viewport
+//     height; staggered recalcs ensure Leaflet re-reads the final size.
+//   - visibilitychange: map container can change size while the PWA is in
+//     the background (e.g. rotation while backgrounded).
 const MapResizeHandler = () => {
   const map = useMap();
 
   useEffect(() => {
     const invalidate = () => map.invalidateSize({ animate: false });
 
-    // Invalidate on mount (handles late container sizing)
+    // Immediate invalidation + staggered follow-ups for iOS PWA late sizing.
     invalidate();
+    [100, 300, 600].forEach(ms => setTimeout(invalidate, ms));
 
     let tid;
     const debounced = () => { clearTimeout(tid); tid = setTimeout(invalidate, 100); };
-    const onOrientation = () => setTimeout(invalidate, 200);
+
+    const onOrientation = () => {
+      // 200 ms for the first pass, then a slower follow-up for older devices.
+      setTimeout(invalidate, 200);
+      setTimeout(invalidate, 600);
+    };
+
+    // After keyboard close: iOS viewport height can take 300–800 ms to settle;
+    // staggered recalcs ensure Leaflet always reflects the final container size.
+    const onFocusOut = () => {
+      [150, 400, 800].forEach(ms => setTimeout(invalidate, ms));
+    };
+
+    // Recover from a stale container size after the PWA returns from background.
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') setTimeout(invalidate, 100);
+    };
 
     window.addEventListener('resize', debounced);
     window.addEventListener('orientationchange', onOrientation);
+    document.addEventListener('focusout', onFocusOut);
+    document.addEventListener('visibilitychange', onVisibility);
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', debounced);
     }
@@ -70,6 +97,8 @@ const MapResizeHandler = () => {
       clearTimeout(tid);
       window.removeEventListener('resize', debounced);
       window.removeEventListener('orientationchange', onOrientation);
+      document.removeEventListener('focusout', onFocusOut);
+      document.removeEventListener('visibilitychange', onVisibility);
       if (window.visualViewport) {
         window.visualViewport.removeEventListener('resize', debounced);
       }

@@ -53,6 +53,16 @@ const AuthLayout = ({ children, brand }) => {
     const onPageShow = () => setTimeout(checkKeyboard, 50);
     window.addEventListener('pageshow', onPageShow);
 
+    // ── Re-evaluate after keyboard close ──
+    // After focusout, iOS takes 300–800 ms to restore visualViewport.height to
+    // its full value. The visualViewport.resize listener fires earlier with a
+    // transitional value that can leave isKeyboardOpen stuck at true.
+    // Staggered rechecks ensure the final settled state is reflected.
+    const onFocusOut = () => {
+      [50, 150, 300, 600, 1000].forEach(ms => setTimeout(checkKeyboard, ms));
+    };
+    document.addEventListener('focusout', onFocusOut);
+
     return () => {
       mql.removeEventListener('change', onOrientation);
       if (vv) {
@@ -61,6 +71,7 @@ const AuthLayout = ({ children, brand }) => {
       }
       window.removeEventListener('orientationchange', onOrientationChange);
       window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('focusout', onFocusOut);
     };
   }, []);
 
