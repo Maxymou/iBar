@@ -4,7 +4,7 @@ const ExploreTopBar = ({ onUserClick, onListClick, listOpen }) => {
   const { user } = useAuth();
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-ui pointer-events-none explore-top-bar">
+    <div className="fixed top-0 left-0 right-0 z-ui pointer-events-none explore-top-bar">
       <div className="flex items-center justify-between px-4 pt-3">
         {/* User button */}
         <button

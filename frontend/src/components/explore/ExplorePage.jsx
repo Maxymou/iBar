@@ -136,7 +136,8 @@ const ExplorePage = ({ onUserClick }) => {
   };
 
   return (
-    <div className="fixed inset-0">
+    <div className="fixed top-0 left-0 right-0 overflow-hidden"
+         style={{ height: 'var(--app-height, 100dvh)' }}>
       {/* Full screen map */}
       <PlaceMapView
         places={places}

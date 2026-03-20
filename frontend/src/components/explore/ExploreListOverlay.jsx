@@ -44,7 +44,7 @@ const ExploreListOverlay = ({ isOpen, places, loading, sort, onSortChange, onSel
   if (!isOpen) return null;
 
   return (
-    <div className="absolute inset-0 z-sheet flex flex-col">
+    <div className="fixed inset-0 z-sheet flex flex-col">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
 

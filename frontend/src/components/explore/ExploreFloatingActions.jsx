@@ -1,6 +1,6 @@
 const ExploreFloatingActions = ({ onGpsClick, onAddClick, gpsLoading, satellite, onSatelliteToggle }) => {
   return (
-    <div className="absolute right-4 z-ui pointer-events-none flex flex-col gap-3 explore-fabs">
+    <div className="fixed right-4 z-ui pointer-events-none flex flex-col gap-3 explore-fabs">
       {/* Satellite toggle button */}
       <button
         onClick={onSatelliteToggle}
