@@ -63,19 +63,20 @@ body, #root {
    On iOS PWA standalone, position:fixed stops at the layout-viewport boundary.
    The safe-area zones (status bar top, home indicator bottom) sit outside that
    boundary and show html/body background directly.
-   Painting html AND body with the nav bar colour makes those zones seamless.
-
-   IMPORTANT: body used to carry class="bg-gray-50" (index.html), which overrode
-   the html background and left a ~#f9fafb strip below the nav. That class was
-   removed; the canonical background is now here.
+   Painting html, body AND #root with the app shell colour (bg-gray-50 / bg-gray-900)
+   ensures those zones blend seamlessly with the main content area.
+   The bottom-nav paints its own background over the safe area via ::after,
+   so its white colour takes precedence when visible.
    ─── */
 html,
-body {
-  background-color: #ffffff;        /* light mode — matches .bottom-nav */
+body,
+#root {
+  background-color: #f9fafb;        /* light mode — matches bg-gray-50 app shell */
 }
 html.dark,
-html.dark body {
-  background-color: #111827;        /* dark mode — matches .dark .bottom-nav */
+html.dark body,
+html.dark #root {
+  background-color: #111827;        /* dark mode — matches bg-gray-900 app shell */
 }
 
 body {
