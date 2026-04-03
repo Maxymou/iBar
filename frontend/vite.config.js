@@ -13,7 +13,7 @@ export default defineConfig({
         short_name: 'IBar',
         description: 'Gérez vos restaurants et hébergements favoris',
         theme_color: '#1d4ed8',
-        background_color: '#ffffff',
+        background_color: '#f9fafb',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
