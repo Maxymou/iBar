@@ -46,9 +46,10 @@
 }
 
 /* ─── Root sizing ───────────────────────────────────────────────────────────
-   height:100% on html makes html fill the ICB (viewport with viewport-fit:cover).
-   body and #root follow so the entire element stack covers the physical screen.
-   min-height:100dvh ensures coverage even if 100% under-shoots on some iOS. ─── */
+   var(--app-height) is set by JS (main.jsx) to window.innerHeight and kept
+   in sync across orientation changes, keyboard open/close, and background recovery.
+   Fallback 100dvh covers the brief window before JS executes on cold start.
+   overflow:hidden prevents bounce-scroll and keeps the map layout stable. ─── */
 html {
   height: var(--app-height, 100dvh);
   overflow: hidden;
@@ -60,13 +61,13 @@ body, #root {
 }
 
 /* ─── Background paint for safe-area zones ──────────────────────────────────
-   On iOS PWA standalone, position:fixed stops at the layout-viewport boundary.
-   The safe-area zones (status bar top, home indicator bottom) sit outside that
-   boundary and show html/body background directly.
-   Painting html, body AND #root with the app shell colour (bg-gray-50 / bg-gray-900)
-   ensures those zones blend seamlessly with the main content area.
-   The bottom-nav paints its own background over the safe area via ::after,
-   so its white colour takes precedence when visible.
+   With viewport-fit:cover, the layout viewport spans the full physical screen.
+   If --app-height is momentarily stale (iOS cold start, rotation, keyboard
+   dismiss), html/body/#root background peeks through below content.
+   Painting all three with the app shell colour (bg-gray-50 / bg-gray-900)
+   makes any transient gap invisible.
+   The PWA manifest background_color must also match (#f9fafb) to avoid a
+   white flash before JS executes on cold start.
    ─── */
 html,
 body,
