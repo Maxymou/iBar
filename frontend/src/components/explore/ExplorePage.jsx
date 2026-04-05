@@ -136,7 +136,7 @@ const ExplorePage = ({ onUserClick }) => {
   };
 
   return (
-    <div className="fixed inset-0">
+    <div className="app-viewport">
       {/* Full screen map */}
       <PlaceMapView
         places={places}
