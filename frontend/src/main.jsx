@@ -9,41 +9,78 @@ import './index.css';
 // (window.innerHeight) and the visual viewport (visualViewport.height) separately
 // and expose CSS custom properties for each use case:
 //
-//   --app-height     : STABLE height = window.innerHeight (layout viewport).
-//                      Used by html/body/#root. Never changes with keyboard.
+//   --app-height     : STABLE maximum height of the layout viewport.
+//                      Derived from window.innerHeight but NEVER reduced by
+//                      keyboard transitions. Only resets on orientation change.
+//                      Used by html/body/#root, .app-viewport, .modal-overlay.
 //   --vvh            : Visual viewport height (shrinks when keyboard is open).
 //                      Used only by .auth-shell to follow the visible area.
 //   --vv-top         : visualViewport.offsetTop, but forced to 0 when keyboard
 //                      is closed (iOS bug: offsetTop can stay stuck after close).
 //   --keyboard-offset: Height consumed by the keyboard (0 when closed).
 //
+// Core principle: --app-height is a HIGH-WATER MARK that only grows, never
+// shrinks due to keyboard. On iOS PWA, window.innerHeight can temporarily
+// report a reduced value for 300–800 ms after keyboard dismiss — writing
+// that transient value to --app-height causes a visible gap at the bottom.
+// By keeping the maximum observed height, the gap never appears.
+// On orientation change, the high-water mark resets so the new (possibly
+// shorter) landscape height is adopted correctly.
+//
 // Known iOS PWA quirks addressed here:
 //   1. Provisional window.innerHeight at script-execution time — the correct
 //      value can arrive up to ~1 s later without firing a 'resize' event.
 //      → Staggered startup recalcs at 100/300/600/1000 ms.
 //   2. After keyboard close, iOS takes 300–800 ms to restore window.innerHeight.
-//      No 'resize' fires during that window.
-//      → Staggered recalcs on 'focusout' at 50/150/300/600/1000 ms.
+//      No 'resize' fires during that window. Previous approach tried staggered
+//      recalcs, but intermediate values were still wrong.
+//      → Now: --app-height uses high-water mark, immune to transient dips.
 //   3. visualViewport.offsetTop can stay stuck at a non-zero value after close.
 //      → Force --vv-top to '0px' when keyboard is considered closed.
 ;(function initAppHeight() {
-  // Cache previous rounded values to skip updates smaller than 1 px (jitter filter).
-  let prevIh = 0, prevH = 0, prevTop = 0;
+  // ── Stable height tracking ──────────────────────────────────────────────────
+  // stableHeight is the known-good full-screen height. It only increases
+  // (capturing larger innerHeight values) and resets to 0 on orientation change
+  // so the new orientation's height can be captured fresh.
+  let stableHeight = 0;
+  let lastOrientation = screen.orientation?.angle
+    ?? (window.innerWidth > window.innerHeight ? 90 : 0);
+
+  // Cache previous CSS values to skip no-op updates (jitter filter).
+  let prevAppH = 0, prevH = 0, prevTop = 0;
 
   function syncViewportMetrics() {
     const vv = window.visualViewport;
-
-    // --app-height uses window.innerHeight (layout viewport) — stable height
-    // that does NOT shrink when the iOS keyboard opens.
     const ih = Math.round(window.innerHeight);
 
-    // --vvh uses visualViewport.height — the actually visible area.
-    // Shrinks by keyboard height when the iOS keyboard is open.
+    // ── Orientation change detection ────────────────────────────────────────
+    // If orientation changed, reset the high-water mark so the new (possibly
+    // shorter) height is accepted. screen.orientation.angle is most reliable;
+    // fallback heuristic uses aspect ratio.
+    const curOrientation = screen.orientation?.angle
+      ?? (window.innerWidth > window.innerHeight ? 90 : 0);
+    if (curOrientation !== lastOrientation) {
+      lastOrientation = curOrientation;
+      stableHeight = 0; // Reset — next measurement becomes the new baseline
+    }
+
+    // ── High-water mark update ──────────────────────────────────────────────
+    // Only grow stableHeight. During keyboard open/close transitions,
+    // innerHeight can temporarily dip — we ignore those dips entirely.
+    // After orientation reset (stableHeight = 0), any value is accepted.
+    if (ih > stableHeight) {
+      stableHeight = ih;
+    }
+
+    // --app-height: always the stable maximum, never the transient dip.
+    const appHeight = stableHeight;
+
+    // --vvh: tracks the actual visible area (shrinks with keyboard).
     const h = vv ? Math.round(vv.height) : ih;
 
     // iOS keyboard is always ≥ 250 px tall. 150 px threshold avoids false
     // positives from Safari's collapsible address bar (~50 px).
-    const kbOffset = Math.max(0, ih - h);
+    const kbOffset = Math.max(0, appHeight - h);
     const isKeyboardOpen = kbOffset > 150;
 
     // iOS known bug: visualViewport.offsetTop can remain stuck at a non-zero
@@ -53,14 +90,14 @@ import './index.css';
 
     // Skip updates within 1 px — avoids unnecessary style recalcs from jitter.
     if (
-      Math.abs(ih - prevIh) < 1 &&
+      Math.abs(appHeight - prevAppH) < 1 &&
       Math.abs(h  - prevH)  < 1 &&
       Math.abs(top - prevTop) < 1
     ) return;
-    prevIh = ih; prevH = h; prevTop = top;
+    prevAppH = appHeight; prevH = h; prevTop = top;
 
     const s = document.documentElement.style;
-    s.setProperty('--app-height',      ih + 'px');
+    s.setProperty('--app-height',      appHeight + 'px');
     s.setProperty('--vvh',             h  + 'px');
     s.setProperty('--vv-top',          top + 'px');
     s.setProperty('--keyboard-offset', kbOffset + 'px');
@@ -76,7 +113,7 @@ import './index.css';
   // ── Staggered startup recalcs ────────────────────────────────────────────────
   // iOS PWA reports a provisional window.innerHeight at script-execution time.
   // The final stable value can arrive up to ~1 s later WITHOUT firing 'resize'.
-  // Running recalcs at increasing intervals ensures we always capture it.
+  // Running recalcs at increasing intervals ensures stableHeight captures it.
   [100, 300, 600, 1000].forEach(ms => setTimeout(rafSync, ms));
 
   // Also run once all resources are loaded (catches late viewport finalization).
@@ -88,6 +125,8 @@ import './index.css';
   window.addEventListener('resize', debounced);
 
   // iOS takes up to 1 s to settle after rotation on some devices.
+  // The orientation change resets stableHeight inside syncViewportMetrics,
+  // then staggered recalcs capture the new correct value.
   window.addEventListener('orientationchange', () => {
     [100, 300, 600, 1000].forEach(ms => setTimeout(rafSync, ms));
   });
@@ -100,12 +139,13 @@ import './index.css';
 
   // ── Keyboard lifecycle ───────────────────────────────────────────────────────
   // focusin fires when an input gains focus (keyboard about to open).
+  // With the high-water mark, --app-height won't shrink — only --vvh changes.
   document.addEventListener('focusin', rafSync);
 
   // focusout fires when an input loses focus (keyboard about to close).
   // After close, iOS takes 300–800 ms to fully restore window.innerHeight.
-  // No 'resize' fires during that window — staggered recalcs catch the
-  // settled value once iOS finishes its keyboard-dismiss animation.
+  // Staggered recalcs still run so --vvh and --keyboard-offset recover,
+  // but --app-height stays rock-solid at the high-water mark throughout.
   document.addEventListener('focusout', () => {
     [50, 150, 300, 600, 1000].forEach(ms => setTimeout(rafSync, ms));
   });
