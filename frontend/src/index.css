@@ -33,11 +33,12 @@
   --z-toast:  300;
 }
 
-/* ─── Standalone PWA: position:fixed anchors to the physical viewport with
-       viewport-fit:cover. env(safe-area-inset-bottom) ≈ 34 px on Face-ID iPhones.
-       We use --sab as the nav's bottom offset so it sits just above the home
-       indicator zone. The home-indicator zone itself is painted by html/body
-       background-color. ─── */
+/* ─── Standalone PWA & viewport-fit:cover ──────────────────────────────────
+       env(safe-area-inset-bottom) ≈ 34 px on Face-ID iPhones.
+       Full-screen containers use .app-viewport (explicit --app-height)
+       instead of fixed inset-0 to avoid WebKit stale-viewport bugs.
+       The home-indicator zone is painted by html/body background-color.
+       ─── */
 
 /* iOS-style base styles */
 * {
@@ -78,6 +79,21 @@ html.dark,
 html.dark body,
 html.dark #root {
   background-color: #111827;        /* dark mode — matches bg-gray-900 app shell */
+}
+
+/* ─── Full-screen viewport container ────────────────────────────────────────
+   Replaces `fixed inset-0` for containers that must cover the full physical
+   screen (e.g. the map).  On iOS PWA standalone, position:fixed with bottom:0
+   can use a stale viewport height (WebKit Bug 237961).  Using an explicit
+   height tied to --app-height (JS-synced via main.jsx) is more reliable:
+   the staggered recalcs correct any stale value within ~1 s.
+   Fallback 100dvh covers the window before JS executes.              ─── */
+.app-viewport {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--app-height, 100dvh);
 }
 
 body {
