@@ -47,8 +47,9 @@
 }
 
 /* ─── Root sizing ───────────────────────────────────────────────────────────
-   var(--app-height) is set by JS (main.jsx) to window.innerHeight and kept
-   in sync across orientation changes, keyboard open/close, and background recovery.
+   var(--app-height) is a JS-managed high-water mark (main.jsx) derived from
+   window.innerHeight + a 100dvh probe at startup.  It never shrinks from
+   keyboard transitions and resets only on orientation change.
    Fallback 100dvh covers the brief window before JS executes on cold start.
    overflow:hidden prevents bounce-scroll and keeps the map layout stable. ─── */
 html {

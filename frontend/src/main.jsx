@@ -27,24 +27,52 @@ import './index.css';
 // On orientation change, the high-water mark resets so the new (possibly
 // shorter) landscape height is adopted correctly.
 //
+// Cold start problem & solution:
+//   On iOS PWA cold start, window.innerHeight reports a PROVISIONAL value
+//   that can be too small (missing ~34 px of safe area bottom). The CSS
+//   fallback `100dvh` is correct at cold start, but once JS writes the
+//   provisional innerHeight to --app-height, it OVERRIDES the correct CSS
+//   fallback with a wrong value. The previous staggered recalcs (up to 1 s)
+//   could all fire before iOS finalizes innerHeight — the wrong value stuck.
+//   Fix: during startup, we insert a hidden probe element measuring `100dvh`
+//   and feed its offsetHeight into the high-water mark. CSS 100dvh resolves
+//   to the correct full-screen height even when innerHeight hasn't caught up.
+//   The probe is removed after the settle period (3 s).
+//
 // Known iOS PWA quirks addressed here:
-//   1. Provisional window.innerHeight at script-execution time — the correct
-//      value can arrive up to ~1 s later without firing a 'resize' event.
-//      → Staggered startup recalcs at 100/300/600/1000 ms.
-//   2. After keyboard close, iOS takes 300–800 ms to restore window.innerHeight.
-//      No 'resize' fires during that window. Previous approach tried staggered
-//      recalcs, but intermediate values were still wrong.
-//      → Now: --app-height uses high-water mark, immune to transient dips.
+//   1. Provisional window.innerHeight at cold start — can be 34 px too small
+//      for 1–3 s. No 'resize' fires. CSS 100dvh is correct sooner.
+//      → dvh probe + 100 ms polling for 3 s at startup.
+//   2. After keyboard close, iOS takes 300–800 ms to restore innerHeight.
+//      → High-water mark ignores transient dips.
 //   3. visualViewport.offsetTop can stay stuck at a non-zero value after close.
 //      → Force --vv-top to '0px' when keyboard is considered closed.
 ;(function initAppHeight() {
   // ── Stable height tracking ──────────────────────────────────────────────────
   // stableHeight is the known-good full-screen height. It only increases
-  // (capturing larger innerHeight values) and resets to 0 on orientation change
+  // (capturing larger height values) and resets to 0 on orientation change
   // so the new orientation's height can be captured fresh.
   let stableHeight = 0;
   let lastOrientation = screen.orientation?.angle
     ?? (window.innerWidth > window.innerHeight ? 90 : 0);
+
+  // ── dvh probe (startup only) ────────────────────────────────────────────────
+  // A hidden fixed element measuring 100dvh. Its offsetHeight gives the
+  // correct CSS viewport height even when window.innerHeight is provisional.
+  // Active only during the startup settle period, then removed.
+  let dvhProbe = document.createElement('div');
+  dvhProbe.style.cssText =
+    'position:fixed;top:0;left:0;width:0;height:100dvh;' +
+    'pointer-events:none;visibility:hidden;z-index:-9999';
+  document.documentElement.appendChild(dvhProbe);
+
+  function readDvhProbe() {
+    return dvhProbe ? dvhProbe.offsetHeight : 0;
+  }
+
+  function removeDvhProbe() {
+    if (dvhProbe) { dvhProbe.remove(); dvhProbe = null; }
+  }
 
   // Cache previous CSS values to skip no-op updates (jitter filter).
   let prevAppH = 0, prevH = 0, prevTop = 0;
@@ -52,6 +80,11 @@ import './index.css';
   function syncViewportMetrics() {
     const vv = window.visualViewport;
     const ih = Math.round(window.innerHeight);
+
+    // During startup, also consider the CSS 100dvh measurement.
+    // On iOS PWA cold start, 100dvh resolves correctly before innerHeight.
+    const dvh = readDvhProbe();
+    const bestHeight = Math.max(ih, dvh);
 
     // ── Orientation change detection ────────────────────────────────────────
     // If orientation changed, reset the high-water mark so the new (possibly
@@ -68,8 +101,8 @@ import './index.css';
     // Only grow stableHeight. During keyboard open/close transitions,
     // innerHeight can temporarily dip — we ignore those dips entirely.
     // After orientation reset (stableHeight = 0), any value is accepted.
-    if (ih > stableHeight) {
-      stableHeight = ih;
+    if (bestHeight > stableHeight) {
+      stableHeight = bestHeight;
     }
 
     // --app-height: always the stable maximum, never the transient dip.
@@ -110,11 +143,14 @@ import './index.css';
   let tid;
   const debounced = () => { clearTimeout(tid); tid = setTimeout(rafSync, 50); };
 
-  // ── Staggered startup recalcs ────────────────────────────────────────────────
-  // iOS PWA reports a provisional window.innerHeight at script-execution time.
-  // The final stable value can arrive up to ~1 s later WITHOUT firing 'resize'.
-  // Running recalcs at increasing intervals ensures stableHeight captures it.
-  [100, 300, 600, 1000].forEach(ms => setTimeout(rafSync, ms));
+  // ── Startup settle loop ──────────────────────────────────────────────────────
+  // iOS PWA can take 1–3 s to finalize the viewport on cold start.
+  // Poll every 100 ms with the dvh probe active, feeding each measurement
+  // into the high-water mark. Stops after 3 s and removes the probe.
+  // On desktop/Android where innerHeight is correct immediately, the loop
+  // is a no-op (jitter filter skips identical values) and cleans up at 3 s.
+  const settleId = setInterval(rafSync, 100);
+  setTimeout(() => { clearInterval(settleId); removeDvhProbe(); }, 3000);
 
   // Also run once all resources are loaded (catches late viewport finalization).
   window.addEventListener('load', () => {
