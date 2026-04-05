@@ -20,14 +20,13 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-modal flex items-end sm:items-center justify-center">
+    <div className="modal-overlay z-modal">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="relative w-full sm:max-w-lg bg-white dark:bg-gray-800 rounded-t-3xl sm:rounded-2xl
-                      shadow-ios-lg animate-slide-in-up overflow-hidden"
-           style={{ maxHeight: '90dvh' }}>
+      <div className="modal-sheet relative w-full sm:max-w-lg bg-white dark:bg-gray-800 rounded-t-3xl sm:rounded-2xl
+                      shadow-ios-lg animate-slide-in-up overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
@@ -42,7 +41,7 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto px-5 py-4" style={{ maxHeight: 'calc(90dvh - 130px)' }}>
+        <div className="modal-scroll overflow-y-auto px-5 py-4">
           {children}
         </div>
 
