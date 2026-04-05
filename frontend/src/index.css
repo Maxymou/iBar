@@ -258,6 +258,37 @@ body {
   }
 }
 
+/* ─── Modal overlay & sheet ─────────────────────────────────────────────────
+   Uses --app-height (JS-synced) instead of dvh units or fixed inset-0.
+   On iOS PWA, dvh and bottom:0 can use stale viewport values after keyboard
+   dismiss — --app-height is kept accurate by the staggered recalcs in main.jsx.
+   The backdrop covers the full app-viewport; the sheet maxHeight derives from
+   --app-height so it always matches the real screen after keyboard close. ─── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--app-height, 100dvh);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .modal-overlay {
+    align-items: center;
+  }
+}
+
+.modal-sheet {
+  max-height: calc(var(--app-height, 100dvh) * 0.9);
+}
+
+.modal-scroll {
+  max-height: calc(var(--app-height, 100dvh) * 0.9 - 130px);
+}
+
 /* Leaflet map */
 .leaflet-container {
   width: 100%;
