@@ -432,3 +432,8 @@ body {
 .dark .leaflet-popup-content-wrapper a {
   color: #93c5fd;
 }
+
+/* Masque complètement la barre d’attribution Leaflet sur toutes les cartes */
+.leaflet-control-attribution {
+  display: none !important;
+}
