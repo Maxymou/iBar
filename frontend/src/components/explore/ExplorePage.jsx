@@ -196,6 +196,7 @@ const ExplorePage = ({ onUserClick }) => {
         onSaved={handleSaved}
         mapCenter={center}
         defaultCategory={category}
+        onDelete={handleDelete}
       />
     </div>
   );

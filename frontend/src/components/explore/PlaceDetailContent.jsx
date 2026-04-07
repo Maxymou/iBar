@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import StarRating from '../ui/StarRating';
 import { useAuth } from '../../store/AuthContext';
 import { openNavigation } from '../../utils/navigation';
@@ -8,117 +9,149 @@ const CATEGORY_LABELS = {
   hotel: { icon: '🏨', label: 'Hôtel', color: 'bg-purple-100 text-purple-700' },
 };
 
-const PlaceDetailContent = ({ place, onClose, onEdit, onDelete }) => {
+const PlaceDetailContent = ({ place, onClose, onEdit }) => {
   const { user } = useAuth();
-  const cat = CATEGORY_LABELS[place.category] || CATEGORY_LABELS.restaurant;
   const isOwner = user && place.created_by === user.id;
+  const hasPhone = Boolean(place.phone);
+  const hasLocation = Boolean(place.address || (place.lat && place.lng));
+  const cat = CATEGORY_LABELS[place.category];
+  const nav = hasLocation ? openNavigation(place.address, place.lat, place.lng) : null;
+
+  // Swipe-down to close — gesture must start on the photo area
+  const [swipeStartY, setSwipeStartY] = useState(null);
+
+  const handlePhotoPointerDown = (e) => {
+    setSwipeStartY(e.clientY);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePhotoPointerUp = (e) => {
+    if (swipeStartY === null) return;
+    const deltaY = e.clientY - swipeStartY;
+    setSwipeStartY(null);
+    // Only close if the downward swipe is significant enough
+    if (deltaY > 60) {
+      onClose?.();
+    }
+  };
 
   return (
     <>
-      {/* Photo */}
-      {place.photo_url && (
-        <div className="h-40 overflow-hidden">
-          <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" />
-        </div>
-      )}
+      {/* 1. Photo — also swipe-down zone */}
+      <div
+        className="relative h-48 bg-gray-100 dark:bg-gray-700 overflow-hidden touch-none select-none"
+        onPointerDown={handlePhotoPointerDown}
+        onPointerUp={handlePhotoPointerUp}
+        onPointerCancel={() => setSwipeStartY(null)}
+      >
+        {place.photo_url ? (
+          <img
+            src={place.photo_url}
+            alt={place.name}
+            className="w-full h-full object-cover pointer-events-none"
+            draggable={false}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-5xl">
+            {cat?.icon || '📍'}
+          </div>
+        )}
 
-      <div className="p-4">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{place.name}</h3>
-            <span className={`inline-block text-xs px-2 py-0.5 rounded-full mt-1 ${cat.color}`}>
+        {/* 2. Edit pencil button — overlay top-right on photo */}
+        {isOwner && onEdit && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(place); }}
+            aria-label="Modifier ce lieu"
+            className="absolute top-3 right-3 w-10 h-10 rounded-full
+                       bg-white/90 backdrop-blur-sm shadow-md
+                       flex items-center justify-center text-gray-700 text-lg
+                       active:scale-95 transition-transform"
+          >
+            ✏️
+          </button>
+        )}
+      </div>
+
+      <div className="p-4 space-y-3">
+        {/* 3. Title */}
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
+          {place.name}
+        </h3>
+
+        {/* 4. Tags / category pills */}
+        {cat && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${cat.color}`}>
               {cat.icon} {cat.label}
             </span>
           </div>
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center
-                         justify-center text-gray-500 text-sm flex-shrink-0"
-            >
-              ✕
-            </button>
-          )}
-        </div>
+        )}
 
-        {/* Rating */}
+        {/* 5. Stars */}
         {place.rating > 0 && (
-          <div className="mb-2">
-            <StarRating value={place.rating} size="sm" />
-          </div>
+          <StarRating value={place.rating} size="sm" />
         )}
 
-        {/* Address */}
-        {place.address && (
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-            📍 {place.address}
-          </p>
-        )}
-
-        {/* Phone */}
-        {place.phone && (
-          <p className="text-sm text-primary-600 dark:text-primary-400 mb-2">
-            <a href={`tel:${place.phone}`} className="underline">{place.phone}</a>
-          </p>
-        )}
-
-        {/* Description */}
+        {/* 6. Comment / description */}
         {place.description && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
             {place.description}
           </p>
         )}
 
-        {/* Navigation links */}
-        {(place.address || (place.lat && place.lng)) && (() => {
-          const nav = openNavigation(place.address, place.lat, place.lng);
-          return (
-            <div className="flex gap-2 mb-3">
-              <a href={nav.waze} target="_blank" rel="noopener noreferrer"
-                 className="flex-1 py-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600
-                            text-sm font-medium rounded-xl text-center">
-                Waze
-              </a>
-              <a href={nav.google} target="_blank" rel="noopener noreferrer"
-                 className="flex-1 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-600
-                            text-sm font-medium rounded-xl text-center">
-                Google
-              </a>
-              <a href={nav.apple} target="_blank" rel="noopener noreferrer"
-                 className="flex-1 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600
-                            text-sm font-medium rounded-xl text-center">
-                Plans
-              </a>
-            </div>
-          );
-        })()}
-
-        {/* Source */}
-        {place.source === 'google_import' && (
-          <p className="text-xs text-gray-400 mb-2">Importé depuis Google Maps</p>
+        {/* 7. Call button — hidden if no phone */}
+        {hasPhone && (
+          <a
+            href={`tel:${place.phone}`}
+            aria-label={`Appeler ${place.name}`}
+            className="flex items-center justify-center w-full py-3.5 gap-2
+                       bg-green-500 hover:bg-green-600 active:bg-green-700
+                       text-white text-base font-semibold rounded-2xl
+                       transition-colors shadow-sm"
+          >
+            <span>📞</span> Appeler
+          </a>
         )}
 
-        {/* Actions */}
-        {isOwner && (onEdit || onDelete) && (
-          <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-            {onEdit && (
-              <button
-                onClick={() => onEdit(place)}
-                className="flex-1 py-2.5 bg-primary-600 text-white text-sm font-medium rounded-xl"
-              >
-                Modifier
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={() => onDelete(place.id)}
-                className="py-2.5 px-4 bg-red-50 dark:bg-red-900/20 text-red-600 text-sm font-medium rounded-xl"
-              >
-                Supprimer
-              </button>
-            )}
+        {/* 8. Navigation buttons — hidden if no location */}
+        {nav && (
+          <div className="flex gap-2">
+            <a
+              href={nav.waze}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Naviguer avec Waze"
+              className="flex-1 py-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600
+                         text-sm font-medium rounded-xl text-center"
+            >
+              Waze
+            </a>
+            <a
+              href={nav.google}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Naviguer avec Google Maps"
+              className="flex-1 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-600
+                         text-sm font-medium rounded-xl text-center"
+            >
+              Google
+            </a>
+            <a
+              href={nav.apple}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Naviguer avec Plans"
+              className="flex-1 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600
+                         text-sm font-medium rounded-xl text-center"
+            >
+              Plans
+            </a>
           </div>
+        )}
+
+        {/* Source badge */}
+        {place.source === 'google_import' && (
+          <p className="text-xs text-gray-400">Importé depuis Google Maps</p>
         )}
       </div>
     </>
