@@ -25,7 +25,7 @@ const ExplorePage = ({ onUserClick }) => {
 
   const { location, error: gpsError, getLocation } = useGeolocation();
   const hasInitialCenter = useRef(false);
-  const { places, loading, fetchPlaces, deletePlace } = usePlaces();
+  const { places, listPlaces, loading, fetchPlaces, fetchListPlaces, deletePlace } = usePlaces();
   const { center, onMapMove, getBboxString } = useMapBounds();
   const { toast } = useToast();
 
@@ -63,18 +63,15 @@ const ExplorePage = ({ onUserClick }) => {
     }, 300);
   }, [category, sort, location, fetchPlaces, onMapMove]);
 
-  // Refetch when category or sort changes (use current bounds)
+  // Refetch when category or sort changes
   useEffect(() => {
+    // Map: refetch within current bounds (viewport-scoped)
     const bbox = getBboxString();
     if (bbox) {
-      fetchPlaces({
-        bbox,
-        category,
-        sort,
-        lat: location?.lat,
-        lng: location?.lng,
-      });
+      fetchPlaces({ bbox, category, sort, lat: location?.lat, lng: location?.lng });
     }
+    // List: always fetch all matching places regardless of viewport
+    fetchListPlaces({ category, sort, lat: location?.lat, lng: location?.lng });
   }, [category, sort]);
 
   // GPS handling
@@ -115,9 +112,10 @@ const ExplorePage = ({ onUserClick }) => {
     if (bbox) {
       fetchPlaces({ bbox, category, sort, lat: location?.lat, lng: location?.lng });
     }
+    fetchListPlaces({ category, sort, lat: location?.lat, lng: location?.lng });
     setAddOpen(false);
     setEditPlace(null);
-  }, [getBboxString, fetchPlaces, category, sort, location]);
+  }, [getBboxString, fetchPlaces, fetchListPlaces, category, sort, location]);
 
   const handleDelete = useCallback(async (id) => {
     try {
@@ -170,7 +168,7 @@ const ExplorePage = ({ onUserClick }) => {
       {/* List overlay */}
       <ExploreListOverlay
         isOpen={listOpen}
-        places={places}
+        places={listPlaces}
         loading={loading}
         sort={sort}
         onSortChange={setSort}
