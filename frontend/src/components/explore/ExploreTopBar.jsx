@@ -25,7 +25,7 @@ const ExploreTopBar = ({ onUserClick, onListClick, listOpen }) => {
         {/* App title */}
         <div className="pointer-events-none flex items-center gap-1.5 bg-white/80 dark:bg-gray-800/80
                         backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
-          <span className="text-lg">🍸</span>
+          <span className="text-lg">🍺</span>
           <span className="text-sm font-bold text-gray-900 dark:text-white">IBar</span>
         </div>
 
