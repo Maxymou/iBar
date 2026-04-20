@@ -186,7 +186,7 @@ body {
   justify-content: center;
   width: 100%;
   min-height: 100%;
-  padding: 1.5rem;
+  padding: 1.5rem 2rem;
   gap: 2rem;
 }
 
@@ -198,7 +198,7 @@ body {
 /* Form card wrapper */
 .auth-shell .auth-card {
   width: 100%;
-  max-width: 24rem;
+  max-width: 20rem;
 }
 
 /* ─── Landscape: 2-column layout ──────────────────────────────────────────── */

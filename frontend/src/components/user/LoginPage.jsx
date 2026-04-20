@@ -28,7 +28,7 @@ const LoginPage = () => {
   const brand = (
     <div className="text-center">
       <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-ios-lg">
-        <span className="text-4xl">🍸</span>
+        <span className="text-4xl">🍺</span>
       </div>
       <h1 className="text-4xl font-bold text-white">IBar</h1>
       <p className="text-primary-200 mt-1">Vos adresses favorites</p>
@@ -37,7 +37,7 @@ const LoginPage = () => {
 
   return (
     <AuthLayout brand={brand}>
-      <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-3xl shadow-ios-lg p-6">
+      <div className="w-full max-w-xs bg-white dark:bg-gray-800 rounded-3xl shadow-ios-lg p-6">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Connexion</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
