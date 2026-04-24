@@ -115,6 +115,12 @@ const create = async (req, res) => {
     return res.status(400).json({ error: 'Catégorie invalide' });
   }
 
+  const latVal = parseFloat(lat);
+  const lngVal = parseFloat(lng);
+  if (isNaN(latVal) || isNaN(lngVal) || latVal < -90 || latVal > 90 || lngVal < -180 || lngVal > 180) {
+    return res.status(400).json({ error: 'Coordonnées invalides' });
+  }
+
   let photo_url = null;
   try {
     if (req.file) {
@@ -131,7 +137,7 @@ const create = async (req, res) => {
       RETURNING *
     `, [
       uuidv4(), name.trim(), category, description || null, address || null,
-      phone || null, parseFloat(lat), parseFloat(lng),
+      phone || null, latVal, lngVal,
       source || 'manual', photo_url,
       rating ? parseFloat(rating) : null,
       req.user.id,
@@ -175,6 +181,14 @@ const update = async (req, res) => {
 
     if (category && !VALID_CATEGORIES.includes(category)) {
       return res.status(400).json({ error: 'Catégorie invalide' });
+    }
+
+    if (lat !== undefined || lng !== undefined) {
+      const latVal = parseFloat(lat ?? current.lat);
+      const lngVal = parseFloat(lng ?? current.lng);
+      if (isNaN(latVal) || isNaN(lngVal) || latVal < -90 || latVal > 90 || lngVal < -180 || lngVal > 180) {
+        return res.status(400).json({ error: 'Coordonnées invalides' });
+      }
     }
 
     const result = await db.query(`

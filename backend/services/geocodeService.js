@@ -46,9 +46,10 @@ async function reverseGeocode(lat, lng) {
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'iBar/1.0',
+        'User-Agent': 'iBar/1.0 (contact@ibar.app)',
         'Accept-Language': 'fr',
       },
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) return null;

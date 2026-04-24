@@ -46,6 +46,7 @@ const compressAvatar = (filePath) =>
 
 const deleteImage = (filename) => {
   if (!filename) return;
+  if (!/^[a-f0-9-]+\.(jpg|jpeg|png|webp)$/i.test(filename)) return;
   const uploadDir = path.join(__dirname, '..', process.env.UPLOAD_DIR || 'uploads');
   const filePath = path.join(uploadDir, filename);
   if (fs.existsSync(filePath)) {

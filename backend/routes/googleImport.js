@@ -11,8 +11,12 @@ router.post('/', authenticate, async (req, res) => {
   }
 
   try {
-    // Resolve short URLs first
     let url = google_maps_url.trim();
+
+    if (!isGoogleMapsUrl(url)) {
+      return res.status(400).json({ error: 'URL Google Maps invalide' });
+    }
+
     if (isShortUrl(url)) {
       const resolved = await resolveShortUrl(url);
       if (resolved) url = resolved;
@@ -41,6 +45,10 @@ router.post('/', authenticate, async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de l\'import Google Maps' });
   }
 });
+
+function isGoogleMapsUrl(url) {
+  return /^https?:\/\/(www\.)?(google\.[a-z]{2,}\/maps|goo\.gl\/maps|maps\.app\.goo\.gl|maps\.google\.[a-z]{2,})/i.test(url);
+}
 
 /**
  * Check if URL is a Google Maps short link
