@@ -52,6 +52,12 @@ const PlaceForm = ({ isOpen, onClose, place, onSaved, mapCenter, defaultCategory
     }
   }, [place, isOpen, defaultCategory]);
 
+  useEffect(() => {
+    return () => {
+      if (preview && preview.startsWith('blob:')) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
   const handlePhotoChange = (file) => {
     if (file) {
       setPhoto(file);

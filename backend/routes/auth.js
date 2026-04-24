@@ -7,7 +7,7 @@ const { authenticate } = require('../middleware/auth');
 router.post('/register', [
   body('name').trim().notEmpty().withMessage('Le nom est obligatoire'),
   body('email').isEmail().withMessage('Email invalide').normalizeEmail(),
-  body('password').isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères'),
+  body('password').isLength({ min: 8 }).withMessage('Le mot de passe doit contenir au moins 8 caractères'),
 ], register);
 
 router.post('/login', [
@@ -18,8 +18,8 @@ router.post('/login', [
 router.post('/refresh', refreshToken);
 
 router.post('/change-password', authenticate, [
-  body('currentPassword').notEmpty(),
-  body('newPassword').isLength({ min: 6 }),
+  body('currentPassword').notEmpty().withMessage('Mot de passe actuel obligatoire'),
+  body('newPassword').isLength({ min: 8 }).withMessage('Le nouveau mot de passe doit contenir au moins 8 caractères'),
 ], changePassword);
 
 router.get('/me', authenticate, getMe);

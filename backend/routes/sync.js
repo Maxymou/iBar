@@ -4,7 +4,11 @@ const { authenticate } = require('../middleware/auth');
 const db = require('../models/db');
 const { v4: uuidv4 } = require('uuid');
 
-const ALLOWED_TYPES = ['restaurants', 'accommodations', 'cafes'];
+const TABLE_MAP = new Map([
+  ['restaurants', 'restaurants'],
+  ['accommodations', 'accommodations'],
+  ['cafes', 'cafes'],
+]);
 const ALLOWED_ACTIONS = ['CREATE', 'UPDATE', 'DELETE'];
 
 router.post('/push', authenticate, async (req, res) => {
@@ -27,7 +31,8 @@ router.post('/push', authenticate, async (req, res) => {
     for (const action of actions) {
       const { type, action: actionType, data } = action;
 
-      if (!ALLOWED_TYPES.includes(type) || !ALLOWED_ACTIONS.includes(actionType)) {
+      const table = TABLE_MAP.get(type);
+      if (!table || !ALLOWED_ACTIONS.includes(actionType)) {
         results.push({ success: false, error: 'Type ou action invalide' });
         continue;
       }
@@ -36,14 +41,14 @@ router.post('/push', authenticate, async (req, res) => {
         if (actionType === 'CREATE') {
           const id = uuidv4();
           await client.query(
-            `INSERT INTO ${type} (id, name, created_by, updated_by, created_at, updated_at)
+            `INSERT INTO ${table} (id, name, created_by, updated_by, created_at, updated_at)
              VALUES ($1, $2, $3, $3, NOW(), NOW())`,
             [id, data.name, req.user.id]
           );
           results.push({ success: true, id });
         } else if (actionType === 'UPDATE') {
           const existing = await client.query(
-            `SELECT created_by FROM ${type} WHERE id = $1 AND is_archived = false`,
+            `SELECT created_by FROM ${table} WHERE id = $1 AND is_archived = false`,
             [data.id]
           );
           if (existing.rows.length === 0 || existing.rows[0].created_by !== req.user.id) {
@@ -51,13 +56,13 @@ router.post('/push', authenticate, async (req, res) => {
             continue;
           }
           await client.query(
-            `UPDATE ${type} SET name = $1, updated_by = $2, updated_at = NOW() WHERE id = $3`,
+            `UPDATE ${table} SET name = $1, updated_by = $2, updated_at = NOW() WHERE id = $3`,
             [data.name, req.user.id, data.id]
           );
           results.push({ success: true, id: data.id });
         } else if (actionType === 'DELETE') {
           const existing = await client.query(
-            `SELECT created_by FROM ${type} WHERE id = $1 AND is_archived = false`,
+            `SELECT created_by FROM ${table} WHERE id = $1 AND is_archived = false`,
             [data.id]
           );
           if (existing.rows.length === 0 || existing.rows[0].created_by !== req.user.id) {
@@ -65,7 +70,7 @@ router.post('/push', authenticate, async (req, res) => {
             continue;
           }
           await client.query(
-            `UPDATE ${type} SET is_archived = true, updated_at = NOW() WHERE id = $1`,
+            `UPDATE ${table} SET is_archived = true, updated_at = NOW() WHERE id = $1`,
             [data.id]
           );
           results.push({ success: true, id: data.id });

@@ -52,6 +52,7 @@ app.use(helmet({
 app.use(compression());
 
 // CORS — origines autorisées depuis FRONTEND_URL et ALLOWED_ORIGINS (virgules)
+const VALID_ORIGIN_RE = /^https?:\/\/[a-zA-Z0-9._\-]+(:\d+)?$/;
 const allowedOrigins = [
   ...(process.env.FRONTEND_URL || '').split(','),
   ...(process.env.ALLOWED_ORIGINS || '').split(','),
@@ -60,6 +61,7 @@ const allowedOrigins = [
 ]
   .map(s => s.trim())
   .filter(Boolean)
+  .filter(s => VALID_ORIGIN_RE.test(s))
   .filter((v, i, arr) => arr.indexOf(v) === i);
 
 app.use(cors({
