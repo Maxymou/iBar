@@ -197,7 +197,7 @@ const StayShareCalculator = () => {
           step="0.01"
           value={totalPrice}
           onChange={(event) => updateTotalPrice(event.target.value)}
-          placeholder="850,00"
+          placeholder="850"
           className="ios-input"
         />
       </div>
