@@ -73,6 +73,8 @@ const StayShareCalculator = () => {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [copyError, setCopyError] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -175,6 +177,37 @@ const StayShareCalculator = () => {
 
     if (editingId === participantId) {
       resetEdition();
+    }
+  };
+
+  const buildShareText = () => {
+    if (!validPrice || calculation.totalNights === 0) return '';
+
+    const lines = [
+      `Prix du logement : ${formatEuros2(price)}`,
+      `Prix de la nuit : ${formatEuros3(calculation.nightlyPrice ?? 0)}`,
+      `Total des nuits : ${calculation.totalNights} ${calculation.totalNights > 1 ? 'nuits' : 'nuit'}`,
+      '',
+      ...calculation.participantsWithAmounts.map((participant) => (
+        `${participant.firstName}, ${participant.nights} ${participant.nights > 1 ? 'nuits' : 'nuit'} = ${formatEuros3(participant.amountDue ?? 0)}`
+      )),
+    ];
+
+    return lines.join('\n');
+  };
+
+  const copyShareDetails = async () => {
+    if (!validPrice || calculation.totalNights === 0) return;
+
+    try {
+      await navigator.clipboard.writeText(buildShareText());
+      setCopySuccess(true);
+      setCopyError(false);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch {
+      setCopyError(true);
+      setCopySuccess(false);
+      setTimeout(() => setCopyError(false), 2000);
     }
   };
 
@@ -316,6 +349,19 @@ const StayShareCalculator = () => {
             label="Écart dû aux arrondis"
             value={`${calculation.roundingGap >= 0 ? '+' : ''}${formatEuros3(calculation.roundingGap)}`}
           />
+        )}
+        <button
+          type="button"
+          onClick={copyShareDetails}
+          disabled={!validPrice || calculation.totalNights === 0}
+          className="ios-button-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {copySuccess ? 'Détail copié' : 'Copier le détail'}
+        </button>
+        {copyError && (
+          <p className="text-sm font-medium text-red-600 dark:text-red-400">
+            Impossible de copier automatiquement.
+          </p>
         )}
       </section>
     </div>
