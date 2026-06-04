@@ -3,6 +3,7 @@ import { useAuth } from '../../store/AuthContext';
 import { useTheme } from '../../store/ThemeContext';
 import { useToast } from '../ui/Toast';
 import Modal from '../ui/Modal';
+import StayShareCalculator from '../tools/StayShareCalculator';
 import api from '../../services/api';
 import { formatDate } from '../../utils/navigation';
 
@@ -12,6 +13,7 @@ const UserDrawer = ({ isOpen, onClose }) => {
   const { toast } = useToast();
   const [editOpen, setEditOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
+  const [stayShareOpen, setStayShareOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '' });
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [loading, setLoading] = useState(false);
@@ -124,6 +126,7 @@ const UserDrawer = ({ isOpen, onClose }) => {
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               <DrawerItem icon="✏️" label="Modifier le profil" onClick={openEdit} />
               <DrawerItem icon="🔑" label="Changer le mot de passe" onClick={() => { setPwOpen(true); onClose(); }} />
+              <DrawerItem icon="🏡" label="Partage de séjour" onClick={() => { setStayShareOpen(true); onClose(); }} />
 
               {/* Theme selector */}
               <div className="border-t border-gray-100 dark:border-gray-700 my-2" />
@@ -207,6 +210,11 @@ const UserDrawer = ({ isOpen, onClose }) => {
                    className="ios-input" />
           </div>
         </form>
+      </Modal>
+
+      {/* Stay Share Modal */}
+      <Modal isOpen={stayShareOpen} onClose={() => setStayShareOpen(false)} title="Partage de séjour">
+        <StayShareCalculator />
       </Modal>
 
       {/* Change Password Modal */}
