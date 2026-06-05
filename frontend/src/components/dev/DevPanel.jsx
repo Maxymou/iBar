@@ -139,7 +139,7 @@ const DevPanel = () => {
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
-        Section DEV discrète : utilisez-la uniquement depuis le serveur iBar avec un token configuré localement.
+        Section DEV discrète : utilisez-la uniquement depuis iBar. Le token DEV host reste configuré côté serveur.
       </div>
 
       <div className="rounded-2xl border border-gray-200 p-4 dark:border-gray-700">
@@ -155,14 +155,12 @@ const DevPanel = () => {
 
         <dl className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300">
           <div className="flex justify-between gap-3">
-            <dt>URL</dt>
-            <dd className="break-all text-right font-medium">{devHostConfig.apiUrl}</dd>
+            <dt>Accès DEV</dt>
+            <dd className="text-right font-medium">{devHostConfig.accessMode}</dd>
           </div>
           <div className="flex justify-between gap-3">
-            <dt>Token frontend</dt>
-            <dd className={devHostConfig.hasToken ? 'text-green-600' : 'text-red-600'}>
-              {devHostConfig.hasToken ? 'Configuré' : 'Absent'}
-            </dd>
+            <dt>URL</dt>
+            <dd className="break-all text-right font-medium">{devHostConfig.apiUrl}</dd>
           </div>
           <div className="flex justify-between gap-3">
             <dt>Service</dt>

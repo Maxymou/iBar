@@ -1,9 +1,9 @@
-const DEV_HOST_API_URL = (import.meta.env.VITE_DEV_HOST_API_URL || 'http://127.0.0.1:4878').replace(/\/$/, '');
-const DEV_HOST_TOKEN = import.meta.env.VITE_DEV_HOST_TOKEN || '';
+const DEV_HOST_API_URL = (import.meta.env.VITE_DEV_HOST_API_URL || '/api/dev-host').replace(/\/$/, '');
 
 const buildHeaders = () => {
   const headers = { 'Content-Type': 'application/json' };
-  if (DEV_HOST_TOKEN) headers['x-dev-host-token'] = DEV_HOST_TOKEN;
+  const token = localStorage.getItem('accessToken');
+  if (token) headers.Authorization = `Bearer ${token}`;
   return headers;
 };
 
@@ -21,7 +21,7 @@ const parseDevHostResponse = async (response) => {
 
 export const devHostConfig = {
   apiUrl: DEV_HOST_API_URL,
-  hasToken: Boolean(DEV_HOST_TOKEN),
+  accessMode: 'via backend',
 };
 
 export const getDevHostStatus = async () => {
