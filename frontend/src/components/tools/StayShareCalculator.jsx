@@ -2,17 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 
 const STORAGE_KEY = 'ibar_stay_share_calculator';
 
-export const roundUpToTenthCent = (value) => Math.ceil(value * 1000) / 1000;
+export const roundUpToTenCents = (value) => Math.ceil(value * 10) / 10;
 
-const formatEuros3 = (value) =>
-  new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 3,
-    maximumFractionDigits: 3,
-  }).format(value);
-
-const formatEuros2 = (value) =>
+const formatEuros = (value) =>
   new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: 'EUR',
@@ -99,7 +91,7 @@ const StayShareCalculator = () => {
       const rawAmount = canCalculate ? participant.nights * nightlyPrice : null;
       return {
         ...participant,
-        amountDue: rawAmount === null ? null : roundUpToTenthCent(rawAmount),
+        amountDue: rawAmount === null ? null : roundUpToTenCents(rawAmount),
       };
     });
     const distributedTotal = participantsWithAmounts.reduce(
@@ -184,12 +176,12 @@ const StayShareCalculator = () => {
     if (!validPrice || calculation.totalNights === 0) return '';
 
     const lines = [
-      `Prix du logement : ${formatEuros2(price)}`,
-      `Prix de la nuit : ${formatEuros3(calculation.nightlyPrice ?? 0)}`,
+      `Prix du logement : ${formatEuros(price)}`,
+      `Prix de la nuit : ${formatEuros(calculation.nightlyPrice ?? 0)}`,
       `Total des nuits : ${calculation.totalNights} ${calculation.totalNights > 1 ? 'nuits' : 'nuit'}`,
       '',
       ...calculation.participantsWithAmounts.map((participant) => (
-        `${participant.firstName}, ${participant.nights} ${participant.nights > 1 ? 'nuits' : 'nuit'} = ${formatEuros3(participant.amountDue ?? 0)}`
+        `${participant.firstName}, ${participant.nights} ${participant.nights > 1 ? 'nuits' : 'nuit'} = ${formatEuros(participant.amountDue ?? 0)}`
       )),
     ];
 
@@ -215,7 +207,7 @@ const StayShareCalculator = () => {
     <div className="space-y-5 text-gray-900 dark:text-gray-100">
       <div className="rounded-2xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 px-4 py-3">
         <p className="text-sm text-primary-900 dark:text-primary-100">
-          Répartissez le coût du logement au prorata des nuits de chacun. Les montants dus sont arrondis au dixième de centime supérieur.
+          Répartissez le coût du logement au prorata des nuits de chacun. Les montants dus sont arrondis au dixième d’euro supérieur.
         </p>
       </div>
 
@@ -310,7 +302,7 @@ const StayShareCalculator = () => {
                   <div className="text-right flex-shrink-0">
                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Montant dû</p>
                     <p className="font-semibold text-gray-900 dark:text-white">
-                      {participant.amountDue === null ? '—' : formatEuros3(participant.amountDue)}
+                      {participant.amountDue === null ? '—' : formatEuros(participant.amountDue)}
                     </p>
                   </div>
                 </div>
@@ -341,13 +333,13 @@ const StayShareCalculator = () => {
           Résumé
         </h3>
         <SummaryRow label="Total des nuits" value={calculation.totalNights || '—'} />
-        <SummaryRow label="Prix par nuit" value={calculation.nightlyPrice === null ? '—' : formatEuros3(calculation.nightlyPrice)} />
-        <SummaryRow label="Total logement" value={validPrice ? formatEuros2(price) : '—'} />
-        <SummaryRow label="Total réparti" value={calculation.distributedTotal === null ? '—' : formatEuros3(calculation.distributedTotal)} />
+        <SummaryRow label="Prix par nuit" value={calculation.nightlyPrice === null ? '—' : formatEuros(calculation.nightlyPrice)} />
+        <SummaryRow label="Total logement" value={validPrice ? formatEuros(price) : '—'} />
+        <SummaryRow label="Total réparti" value={calculation.distributedTotal === null ? '—' : formatEuros(calculation.distributedTotal)} />
         {calculation.roundingGap !== null && (
           <SummaryRow
             label="Écart dû aux arrondis"
-            value={`${calculation.roundingGap >= 0 ? '+' : ''}${formatEuros3(calculation.roundingGap)}`}
+            value={`${calculation.roundingGap >= 0 ? '+' : ''}${formatEuros(calculation.roundingGap)}`}
           />
         )}
         <button
