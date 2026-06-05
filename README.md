@@ -12,6 +12,7 @@ Application mobile-first Progressive Web App (PWA) pour gérer vos restaurants e
 - [Base de données](#base-de-données)
 - [Accès](#accès)
 - [Services systemd](#services-systemd)
+- [API DEV host](#api-dev-host)
 - [Scripts utilitaires](#scripts-utilitaires)
 - [Démarrage manuel](#démarrage-manuel-sans-systemd)
 - [API](#api)
@@ -64,6 +65,10 @@ iBar/
 │       └── utils/
 ├── database/
 │   └── schema.sql         # Schéma PostgreSQL
+├── host-tools/
+│   └── dev-host-api.js    # API locale DEV host (port 4878)
+├── docs/
+│   └── dev-host-api.md    # Installation du service DEV host
 ├── scripts/
 │   ├── install.sh         # Installation complète + systemd
 │   ├── start.sh           # Démarrage (systemd ou manuel)
@@ -377,6 +382,14 @@ bash scripts/install.sh
 ```
 
 Le script est idempotent : il reconstruit le frontend, réinstalle les dépendances et redémarre les services sans toucher à la base de données si elle existe déjà.
+
+---
+
+## API DEV host
+
+La section **DEV** de l’interface peut contacter une API locale dédiée pour vérifier l’état du serveur, déclencher une mise à jour de l’application et forcer une mise à jour PWA côté navigateur. Cette API tourne hors de l’application principale sur le port `4878` et est protégée par `DEV_HOST_TOKEN`.
+
+Documentation complète : [docs/dev-host-api.md](docs/dev-host-api.md).
 
 ---
 
