@@ -4,6 +4,7 @@ import { useTheme } from '../../store/ThemeContext';
 import { useToast } from '../ui/Toast';
 import Modal from '../ui/Modal';
 import StayShareCalculator from '../tools/StayShareCalculator';
+import DevPanel from '../dev/DevPanel';
 import api from '../../services/api';
 import { formatDate } from '../../utils/navigation';
 
@@ -14,6 +15,7 @@ const UserDrawer = ({ isOpen, onClose }) => {
   const [editOpen, setEditOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
   const [stayShareOpen, setStayShareOpen] = useState(false);
+  const [devOpen, setDevOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '' });
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [loading, setLoading] = useState(false);
@@ -128,6 +130,14 @@ const UserDrawer = ({ isOpen, onClose }) => {
               <DrawerItem icon="🔑" label="Changer le mot de passe" onClick={() => { setPwOpen(true); onClose(); }} />
               <DrawerItem icon="🏡" label="Partage de séjour" onClick={() => { setStayShareOpen(true); onClose(); }} />
 
+              <div className="border-t border-gray-100 dark:border-gray-700 my-2" />
+              <div className="px-4 py-2">
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
+                  DEV
+                </p>
+                <DrawerItem icon="🛠️" label="Outils DEV" onClick={() => { setDevOpen(true); onClose(); }} />
+              </div>
+
               {/* Theme selector */}
               <div className="border-t border-gray-100 dark:border-gray-700 my-2" />
               <div className="px-4 py-2">
@@ -215,6 +225,11 @@ const UserDrawer = ({ isOpen, onClose }) => {
       {/* Stay Share Modal */}
       <Modal isOpen={stayShareOpen} onClose={() => setStayShareOpen(false)} title="Partage de séjour">
         <StayShareCalculator />
+      </Modal>
+
+      {/* DEV Modal */}
+      <Modal isOpen={devOpen} onClose={() => setDevOpen(false)} title="DEV">
+        <DevPanel />
       </Modal>
 
       {/* Change Password Modal */}
