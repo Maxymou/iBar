@@ -39,6 +39,7 @@ const geocodeRoutes = require('./routes/geocode');
 const googleImportRoutes = require('./routes/googleImport');
 const userRoutes = require('./routes/users');
 const syncRoutes = require('./routes/sync');
+const devHostRoutes = require('./routes/devHost');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -118,6 +119,7 @@ app.use('/api/places', placesRoutes);
 app.use('/api/geocode', geocodeRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/sync', syncRoutes);
+app.use('/api/dev-host', devHostRoutes);
 
 // Health check (used by install.sh and monitoring)
 app.get('/api/health', (req, res) => {

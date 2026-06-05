@@ -387,7 +387,7 @@ Le script est idempotent : il reconstruit le frontend, réinstalle les dépendan
 
 ## API DEV host
 
-La section **DEV** de l’interface peut contacter une API locale dédiée pour vérifier l’état du serveur, déclencher une mise à jour de l’application et forcer une mise à jour PWA côté navigateur. Cette API tourne hors de l’application principale sur le port `4878` et est protégée par `DEV_HOST_TOKEN`.
+La section **DEV** de l’interface passe par le backend iBar (`/api/dev-host`) pour vérifier l’état du serveur, déclencher une mise à jour de l’application et forcer une mise à jour PWA côté navigateur. L’API DEV host reste locale sur `127.0.0.1:4878` et le token `DEV_HOST_TOKEN` reste uniquement côté serveur.
 
 Documentation complète : [docs/dev-host-api.md](docs/dev-host-api.md).
 
